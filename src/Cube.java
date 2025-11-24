@@ -158,12 +158,12 @@ public class Cube {
         cube.set(2, cube.get(20));
         cube.set(5, cube.get(23));
         cube.set(8, cube.get(26));
-        cube.set(20, cube.get(45 + 2));
-        cube.set(23, cube.get(45 + 5));
-        cube.set(26, cube.get(45 + 8));
-        cube.set(45 + 2, cube.get(36));
-        cube.set(45 + 5, cube.get(39));
-        cube.set(45 + 8, cube.get(42));
+        cube.set(20, cube.get(47));
+        cube.set(23, cube.get(50));
+        cube.set(26, cube.get(53));
+        cube.set(47, cube.get(36));
+        cube.set(50, cube.get(39));
+        cube.set(53, cube.get(42));
 
         cube.set(36, u2);
         cube.set(39, u5);
@@ -181,11 +181,11 @@ public class Cube {
 
         char u6 = cube.get(6), u7 = cube.get(7), u8 = cube.get(8);
 
-        cube.set(6, cube.get(15));
-        cube.set(7, cube.get(16));
+        cube.set(6, cube.get(11));
+        cube.set(7, cube.get(14));
         cube.set(8, cube.get(17));
-        cube.set(15, cube.get(45));
-        cube.set(16, cube.get(46));
+        cube.set(11, cube.get(45));
+        cube.set(14, cube.get(46));
         cube.set(17, cube.get(47));
         cube.set(45, cube.get(27));
         cube.set(46, cube.get(30));
@@ -206,20 +206,21 @@ public class Cube {
         rotateFaceCW(36);
 
         char u0 = cube.get(0), u1 = cube.get(1), u2 = cube.get(2);
+        char temp0 = cube.get(9), temp1 = cube.get(12), temp2 = cube.get(15);
 
         cube.set(0, cube.get(29));
         cube.set(1, cube.get(32));
         cube.set(2, cube.get(35));
-        cube.set(29, cube.get(47));
-        cube.set(32, cube.get(50));
-        cube.set(35, cube.get(53));
-        cube.set(47, cube.get(9));
-        cube.set(50, cube.get(12));
-        cube.set(53, cube.get(15));
-
         cube.set(9, u0);
         cube.set(12, u1);
         cube.set(15, u2);
+        cube.set(29, cube.get(51));
+        cube.set(32, cube.get(52));
+        cube.set(35, cube.get(53));
+
+        cube.set(51, temp0);
+        cube.set(52, temp1);
+        cube.set(53, temp2);
     }
 
     public void Bprime() {
