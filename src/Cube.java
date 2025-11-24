@@ -27,7 +27,7 @@ public class Cube {
         int idx = 0;
         for (int r = 0; r < 3; r++)
             for (int c = 3; c < 6; c++)
-                cube.set(idx++, lines. get(r).charAt(c));
+                cube.set(idx++, lines.get(r).charAt(c));
         for (int r = 3; r < 6; r++)
             for (int c = 0; c < 3; c++)
                 cube.set(idx++, lines.get(r).charAt(c));
@@ -88,7 +88,6 @@ public class Cube {
         cube.set(36, l0);
         cube.set(37, l1);
         cube.set(38, l2);
-        printNet();
     }
 
     public void Uprime() {
@@ -101,19 +100,19 @@ public class Cube {
         rotateFaceCW(45);
         char l6 = cube.get(15), l7 = cube.get(16), l8 = cube.get(17);
 
-        cube.set(15, cube.get(38));
-        cube.set(16, cube.get(39));
-        cube.set(17, cube.get(40));
-        cube.set(38, cube.get(29));
-        cube.set(39, cube.get(30));
-        cube.set(40, cube.get(31));
-        cube.set(29, cube.get(20));
-        cube.set(30, cube.get(21));
-        cube.set(31, cube.get(22));
+        cube.set(15, cube.get(42));
+        cube.set(16, cube.get(43));
+        cube.set(17, cube.get(44));
+        cube.set(24, cube.get(33));
+        cube.set(25, cube.get(34));
+        cube.set(26, cube.get(35));
+        cube.set(33, cube.get(24));
+        cube.set(34, cube.get(25));
+        cube.set(35, cube.get(26));
 
-        cube.set(20, l6);
-        cube.set(21, l7);
-        cube.set(22, l8);
+        cube.set(42, l6);
+        cube.set(43, l7);
+        cube.set(44, l8);
     }
 
     public void Dprime() {
@@ -225,39 +224,6 @@ public class Cube {
         B();
         B();
     }
-
-
-
-
-    public void printNet() {
-        String s = this.toString();
-
-        // U face at rows 0–2, columns 3–5
-        System.out.println("   " + s.substring(0, 3) + "   ");
-        System.out.println("   " + s.substring(3, 6) + "   ");
-        System.out.println("   " + s.substring(6, 9) + "   ");
-
-        // Middle strip: L F R B across columns 0–11
-        for (int row = 0; row < 3; row++) {
-            int L = 9  + row * 3;
-            int F = 18 + row * 3;
-            int R = 27 + row * 3;
-            int B = 36 + row * 3;
-
-            System.out.println(
-                    s.substring(L, L+3) +
-                            s.substring(F, F+3) +
-                            s.substring(R, R+3) +
-                            s.substring(B, B+3)
-            );
-        }
-
-        // D face at rows 6–8, columns 3–5
-        System.out.println("   " + s.substring(45, 48) + "   ");
-        System.out.println("   " + s.substring(48, 51) + "   ");
-        System.out.println("   " + s.substring(51, 54) + "   ");
-    }
-
 
 
 }
