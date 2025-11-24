@@ -1,10 +1,9 @@
-import java.io.*;
 
 public class CubeMoveTester {
 
     public static void main(String[] args) throws Exception {
 
-        Cube original = new Cube("src/test_solved_cube.txt");
+        Cube original = new Cube("test_solved_cube.txt");
 
         testMove(original, "U");
         testMove(original, "Uprime");
@@ -43,7 +42,7 @@ public class CubeMoveTester {
     }
 
     private static Cube cloneCube(Cube c) throws Exception {
-        Cube x = new Cube("src/temp_clone.txt");
+        Cube x = new Cube("temp_clone.txt");
         for (int i = 0; i < 54; i++) x.cube.set(i, c.cube.get(i));
         return x;
     }

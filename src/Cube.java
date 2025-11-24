@@ -99,6 +99,7 @@ public class Cube {
     public void D() {
         rotateFaceCW(45);
         char l6 = cube.get(15), l7 = cube.get(16), l8 = cube.get(17);
+        char temp1 = cube.get(24), temp2 = cube.get(25), temp3 = cube.get(26);
 
         cube.set(15, cube.get(42));
         cube.set(16, cube.get(43));
@@ -106,9 +107,10 @@ public class Cube {
         cube.set(24, cube.get(33));
         cube.set(25, cube.get(34));
         cube.set(26, cube.get(35));
-        cube.set(33, cube.get(24));
-        cube.set(34, cube.get(25));
-        cube.set(35, cube.get(26));
+
+        cube.set(33, temp1);
+        cube.set(34, temp2);
+        cube.set(35, temp3);
 
         cube.set(42, l6);
         cube.set(43, l7);
