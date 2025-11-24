@@ -82,4 +82,11 @@ public class CubeMoveTester {
             default -> throw new RuntimeException("bad move");
         };
     }
+
+
+
+
+
+
+
 }

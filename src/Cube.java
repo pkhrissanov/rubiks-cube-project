@@ -113,6 +113,7 @@ public class Cube {
         cube.set(42, l6);
         cube.set(43, l7);
         cube.set(44, l8);
+        printNet();
     }
 
     public void Dprime() {
@@ -224,6 +225,37 @@ public class Cube {
         B();
         B();
     }
+
+    public void printNet() {
+        String s = this.toString();
+
+        // U face at rows 0–2, columns 3–5
+        System.out.println("   " + s.substring(0, 3) + "   ");
+        System.out.println("   " + s.substring(3, 6) + "   ");
+        System.out.println("   " + s.substring(6, 9) + "   ");
+
+        // Middle strip: L F R B across columns 0–11
+        for (int row = 0; row < 3; row++) {
+            int L = 9  + row * 3;
+            int F = 18 + row * 3;
+            int R = 27 + row * 3;
+            int B = 36 + row * 3;
+
+            System.out.println(
+                    s.substring(L, L+3) +
+                            s.substring(F, F+3) +
+                            s.substring(R, R+3) +
+                            s.substring(B, B+3)
+            );
+        }
+
+        // D face at rows 6–8, columns 3–5
+        System.out.println("   " + s.substring(45, 48) + "   ");
+        System.out.println("   " + s.substring(48, 51) + "   ");
+        System.out.println("   " + s.substring(51, 54) + "   ");
+    }
+
+
 
 
 }
