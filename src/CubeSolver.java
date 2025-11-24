@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class CubeSolver {
+public class CubeSolver  {
 
     public static void main(String[] args) {
         try {
