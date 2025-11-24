@@ -27,7 +27,7 @@ public class Cube {
         int idx = 0;
         for (int r = 0; r < 3; r++)
             for (int c = 3; c < 6; c++)
-                cube.set(idx++, lines.get(r).charAt(c));
+                cube.set(idx++, lines. get(r).charAt(c));
         for (int r = 3; r < 6; r++)
             for (int c = 0; c < 3; c++)
                 cube.set(idx++, lines.get(r).charAt(c));
@@ -88,6 +88,7 @@ public class Cube {
         cube.set(36, l0);
         cube.set(37, l1);
         cube.set(38, l2);
+        printNet();
     }
 
     public void Uprime() {
@@ -224,6 +225,39 @@ public class Cube {
         B();
         B();
     }
+
+
+
+
+    public void printNet() {
+        String s = this.toString();
+
+        // U face at rows 0–2, columns 3–5
+        System.out.println("   " + s.substring(0, 3) + "   ");
+        System.out.println("   " + s.substring(3, 6) + "   ");
+        System.out.println("   " + s.substring(6, 9) + "   ");
+
+        // Middle strip: L F R B across columns 0–11
+        for (int row = 0; row < 3; row++) {
+            int L = 9  + row * 3;
+            int F = 18 + row * 3;
+            int R = 27 + row * 3;
+            int B = 36 + row * 3;
+
+            System.out.println(
+                    s.substring(L, L+3) +
+                            s.substring(F, F+3) +
+                            s.substring(R, R+3) +
+                            s.substring(B, B+3)
+            );
+        }
+
+        // D face at rows 6–8, columns 3–5
+        System.out.println("   " + s.substring(45, 48) + "   ");
+        System.out.println("   " + s.substring(48, 51) + "   ");
+        System.out.println("   " + s.substring(51, 54) + "   ");
+    }
+
 
 
 }
