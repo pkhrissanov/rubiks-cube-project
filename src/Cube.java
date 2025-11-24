@@ -21,8 +21,6 @@ public class Cube {
             }
         }
 
-        if (lines.size() != 9)
-            throw new IncorrectFormatException("Expected 9 lines (net format).");
 
         cube = new ArrayList<>(54);
         for (int i = 0; i < 54; i++) cube.add('X');
