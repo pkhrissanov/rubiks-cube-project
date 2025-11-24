@@ -1,11 +1,14 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
-public class Cube {
+public class Cube implements Cloneable {
 
     public ArrayList<Character> cube;  // final clean cube: U,L,F,R,B,D contiguous
 
-    public Cube(String fileName) throws IOException, IncorrectFormatException {
+    // --- existing file-reading constructor left unchanged ---
+    public Cube(String fileName) throws IOException {
         File file = new File(fileName);
         if (!file.exists() || !file.canRead()) {
             throw new IOException("Cannot read: " + file.getAbsolutePath());
@@ -20,7 +23,6 @@ public class Cube {
                 lines.add(line);
             }
         }
-
 
         cube = new ArrayList<>(54);
         for (int i = 0; i < 54; i++) cube.add('X');
@@ -45,6 +47,18 @@ public class Cube {
                 cube.set(idx++, lines.get(r).charAt(c));
     }
 
+    /** Copy constructor for creating clones */
+    public Cube(ArrayList<Character> arr) {
+        this.cube = new ArrayList<>(arr.size());
+        this.cube.addAll(arr);
+    }
+
+    /** Helper to deep-clone */
+    @Override
+    public Cube clone() {
+        return new Cube(new ArrayList<>(this.cube));
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(54);
@@ -52,9 +66,27 @@ public class Cube {
         return sb.toString();
     }
 
+    // determine if cube is solved: each face's 9 stickers equal to face center
+    public boolean isSolved() {
+        // faces: U[0..8], L[9..17], F[18..26], R[27..35], B[36..44], D[45..53]
+        int[][] faces = {
+                {0,1,2,3,4,5,6,7,8},
+                {9,10,11,12,13,14,15,16,17},
+                {18,19,20,21,22,23,24,25,26},
+                {27,28,29,30,31,32,33,34,35},
+                {36,37,38,39,40,41,42,43,44},
+                {45,46,47,48,49,50,51,52,53}
+        };
+        for (int[] f : faces) {
+            char c = cube.get(f[0]);
+            for (int idx : f) {
+                if (cube.get(idx) != c) return false;
+            }
+        }
+        return true;
+    }
 
-    //ALL MOVES
-
+    // --- your swap/rotateFaceCW and move methods (unchanged) ---
     private void swap(int a, int b) {
         char t = cube.get(a);
         cube.set(a, cube.get(b));
@@ -69,7 +101,6 @@ public class Cube {
         swap(base + 3, base + 7);
         swap(base + 7, base + 5);
     }
-
 
     public void U() {
         rotateFaceCW(0);
@@ -91,9 +122,7 @@ public class Cube {
     }
 
     public void Uprime() {
-        U();
-        U();
-        U();
+        U(); U(); U();
     }
 
     public void D() {
@@ -115,13 +144,10 @@ public class Cube {
         cube.set(42, l6);
         cube.set(43, l7);
         cube.set(44, l8);
-        printNet();
     }
 
     public void Dprime() {
-        D();
-        D();
-        D();
+        D(); D(); D();
     }
 
     public void L() {
@@ -145,9 +171,7 @@ public class Cube {
     }
 
     public void Lprime() {
-        L();
-        L();
-        L();
+        L(); L(); L();
     }
 
     public void R() {
@@ -171,9 +195,7 @@ public class Cube {
     }
 
     public void Rprime() {
-        R();
-        R();
-        R();
+        R(); R(); R();
     }
 
     public void F() {
@@ -197,9 +219,7 @@ public class Cube {
     }
 
     public void Fprime() {
-        F();
-        F();
-        F();
+        F(); F(); F();
     }
 
     public void B() {
@@ -224,20 +244,17 @@ public class Cube {
     }
 
     public void Bprime() {
-        B();
-        B();
-        B();
+        B(); B(); B();
     }
 
+    // Printing unchanged
     public void printNet() {
         String s = this.toString();
 
-        // U face at rows 0–2, columns 3–5
         System.out.println("   " + s.substring(0, 3) + "   ");
         System.out.println("   " + s.substring(3, 6) + "   ");
         System.out.println("   " + s.substring(6, 9) + "   ");
 
-        // Middle strip: L F R B across columns 0–11
         for (int row = 0; row < 3; row++) {
             int L = 9  + row * 3;
             int F = 18 + row * 3;
@@ -246,21 +263,70 @@ public class Cube {
 
             System.out.println(
                     s.substring(L, L+3) +
-                            s.substring(F, F+3) +
-                            s.substring(R, R+3) +
-                            s.substring(B, B+3)
+                    s.substring(F, F+3) +
+                    s.substring(R, R+3) +
+                    s.substring(B, B+3)
             );
         }
 
-        // D face at rows 6–8, columns 3–5
         System.out.println("   " + s.substring(45, 48) + "   ");
         System.out.println("   " + s.substring(48, 51) + "   ");
         System.out.println("   " + s.substring(51, 54) + "   ");
     }
 
+    // --- new helper: successor structure for neighbors() ---
+    public static class Succ {
+        public final Cube state;
+        public final String move;
+        public Succ(Cube s, String m) { state = s; move = m; }
+    }
 
+    /** Return all successors (one move away) as (state, moveName) pairs.
+     *  We include the 12 face moves: U, U', D, D', L, L', R, R', F, F', B, B'
+     *
+     *  Optional pruning (like skipping inverse of lastMove) is implemented in the solver.
+     */
+    public List<Succ> neighbors() {
+        List<Succ> out = new ArrayList<>(12);
+        String[] moves = {"U","U'","D","D'","L","L'","R","R'","F","F'","B","B'"};
+        for (String m : moves) {
+            Cube c = this.clone();
+            applyMoveByName(c, m);
+            out.add(new Succ(c, m));
+        }
+        return out;
+    }
 
+    /** Apply named move to a cube instance */
+    public static void applyMoveByName(Cube c, String move) {
+        switch (move) {
+            case "U":  c.U(); break;
+            case "U'": c.Uprime(); break;
+            case "D":  c.D(); break;
+            case "D'": c.Dprime(); break;
+            case "L":  c.L(); break;
+            case "L'": c.Lprime(); break;
+            case "R":  c.R(); break;
+            case "R'": c.Rprime(); break;
+            case "F":  c.F(); break;
+            case "F'": c.Fprime(); break;
+            case "B":  c.B(); break;
+            case "B'": c.Bprime(); break;
+            default: throw new IllegalArgumentException("Unknown move: " + move);
+        }
+    }
 
+    // --- equality & hash based on the string encoding of the cube ---
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Cube)) return false;
+        Cube other = (Cube) o;
+        return this.toString().equals(other.toString());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.toString());
+    }
 }
-
-
