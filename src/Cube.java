@@ -7,6 +7,7 @@ public class Cube {
     public ArrayList<Character> cube;
 
 
+    //makes the cube file into an array representation
     public Cube(String fileName) throws IOException, IncorrectFormatException {
         File file = new File(fileName);
 
@@ -47,9 +48,6 @@ public class Cube {
             cube.add(letters.charAt(i));
         }
     }
-
-
-
 
 
     @Override //gives us a string representation of cube
