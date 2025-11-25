@@ -67,24 +67,6 @@ public class Cube implements Cloneable {
     }
 
     // determine if cube is solved: each face's 9 stickers equal to face center
-    public boolean isSolved() {
-        // faces: U[0..8], L[9..17], F[18..26], R[27..35], B[36..44], D[45..53]
-        int[][] faces = {
-                {0,1,2,3,4,5,6,7,8},
-                {9,10,11,12,13,14,15,16,17},
-                {18,19,20,21,22,23,24,25,26},
-                {27,28,29,30,31,32,33,34,35},
-                {36,37,38,39,40,41,42,43,44},
-                {45,46,47,48,49,50,51,52,53}
-        };
-        for (int[] f : faces) {
-            char c = cube.get(f[0]);
-            for (int idx : f) {
-                if (cube.get(idx) != c) return false;
-            }
-        }
-        return true;
-    }
 
     // --- your swap/rotateFaceCW and move methods (unchanged) ---
     private void swap(int a, int b) {
@@ -317,16 +299,18 @@ public class Cube implements Cloneable {
     }
 
     // --- equality & hash based on the string encoding of the cube ---
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Cube)) return false;
-        Cube other = (Cube) o;
-        return this.toString().equals(other.toString());
+    public boolean isSolved() {
+        return this.toString().equals(
+                "   OOO\n" +
+                        "   OOO\n" +
+                        "   OOO\n" +
+                        "GGGWWWBBBYYY\n" +
+                        "GGGWWWBBBYYY\n" +
+                        "GGGWWWBBBYYY\n" +
+                        "   RRR\n" +
+                        "   RRR\n" +
+                        "   RRR\n"
+        );
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.toString());
-    }
 }
