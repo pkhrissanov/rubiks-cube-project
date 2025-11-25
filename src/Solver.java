@@ -32,7 +32,7 @@ public class Solver {
 
     private boolean bfs(Cube cube, int depth, List<String> path) {
         //If solved, we’re done
-        if (cube.isSolved()) {
+        if (cube.isSolved()) { //also would be check if white cross
             return true;
         }
 
