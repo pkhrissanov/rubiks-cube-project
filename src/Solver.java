@@ -50,7 +50,7 @@ public class Solver {
 
         // Try all moves
         for (String m : MOVES) {
-            if(path[-1] == m.inverMove()){
+            if(path[-1] == inverseMove(m)){
 
             }
 
