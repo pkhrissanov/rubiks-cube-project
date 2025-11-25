@@ -301,15 +301,12 @@ public class Cube implements Cloneable {
     // --- equality & hash based on the string encoding of the cube ---
     public boolean isSolved() {
         return this.toString().equals(
-                "   OOO\n" +
-                        "   OOO\n" +
-                        "   OOO\n" +
-                        "GGGWWWBBBYYY\n" +
-                        "GGGWWWBBBYYY\n" +
-                        "GGGWWWBBBYYY\n" +
-                        "   RRR\n" +
-                        "   RRR\n" +
-                        "   RRR\n"
+                "OOOOOOOOO" +
+                "GGGGGGGGG" +
+                "WWWWWWWWW" +
+                "BBBBBBBBB" +
+                "YYYYYYYYY" +
+                "RRRRRRRRR"
         );
     }
 
