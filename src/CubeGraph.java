@@ -46,23 +46,24 @@ public class CubeGraph {
     }
 
 
-    private boolean isInverseMove(String moveA, String moveB) {
-        if (moveA == null || moveB == null) return false;
+    private String inverseMove(String move) {
+        switch (move){
+            case("U"): return ("U'");
+            case("U'"): return ("U");
+            case("D"): return ("D'");
+            case("D'"): return ("D");
+            case("L"): return ("L'");
+            case("L'"): return ("L");
+            case("R"): return ("R'");
+            case("R'"): return ("R");
+            case("B"): return ("B'");
+            case("B'"): return ("B");
+            case("F"): return ("F'");
+            case("F'"): return ("F");
 
-        // Example: moveA = "U" and moveB = "U'"
-        boolean A_isNormal = moveA.length() == 1;
-        boolean B_isPrime = moveB.length() == 2;
-
-        boolean A_isPrime = moveA.length() == 2;
-        boolean B_isNormal = moveB.length() == 1;
-
-        if (A_isNormal && B_isPrime) {
-            return moveA.charAt(0) == moveB.charAt(0);
+            default:
+                return move;
         }
-        if (A_isPrime && B_isNormal) {
-            return moveA.charAt(0) == moveB.charAt(0);
-        }
-        return false;
     }
 
 
