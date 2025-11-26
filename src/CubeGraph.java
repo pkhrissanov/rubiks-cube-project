@@ -76,6 +76,18 @@ public class CubeGraph {
                     mv.equals(inverseMove(currentNode.parentEdge))) {
                 continue;
             }
+            
+            //Prune triple R R R or R' R R'
+            if (currentNode.path != null && currentNode.path.size() >= 2) {
+            String last = currentNode.parentEdge;
+            String secondLast = currentNode.path.get(currentNode.path.size() - 2);
+
+                if (last != null &&
+                    last.charAt(0) == mv.charAt(0) &&
+                    secondLast.charAt(0) == mv.charAt(0)) {       
+                    continue;
+                }
+            }
 
             Cube nextCube = currentNode.currentState.clone();
             nextCube.move(mv);
