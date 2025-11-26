@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.List;
 
 public class CubeGraph {
     private static final String[] MOVES = {"U", "U'", "D", "D'", "L", "L'", "R", "R'", "F", "F'", "B", "B'"};

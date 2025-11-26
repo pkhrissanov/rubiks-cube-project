@@ -190,9 +190,9 @@ public class Cube implements Cloneable {
                 cube.set(50, cube.get(39));
                 cube.set(53, cube.get(42));
 
-                cube.set(36, ru2);
+                cube.set(42, ru2);
                 cube.set(39, ru5);
-                cube.set(42, ru8);
+                cube.set(36, ru8);
                 break;
 
             case "R'":
