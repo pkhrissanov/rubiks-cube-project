@@ -1,6 +1,5 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Cube implements Cloneable {
 
@@ -56,6 +55,11 @@ public class Cube implements Cloneable {
         this.cube.addAll(arr);
     }
 
+    public Cube(){
+        cube = new ArrayList<>(54);
+        for(int i = 0; i < 54; i++) cube.add('a');
+    }
+
     /**
      * Helper to deep-clone
      */
@@ -90,7 +94,7 @@ public class Cube implements Cloneable {
         swap(base + 7, base + 5);
     }
 
-    public void move(String m) {
+    public ArrayList<Character> move(String m) {
 
         switch (m) {
             case "U":
@@ -253,6 +257,7 @@ public class Cube implements Cloneable {
             default:
                 throw new IllegalArgumentException("Invalid move: " + m);
         }
+        return this.cube;
     }
 
     // Printing unchanged
@@ -281,8 +286,6 @@ public class Cube implements Cloneable {
         System.out.println("   " + s.substring(48, 51) + "   ");
         System.out.println("   " + s.substring(51, 54) + "   ");
     }
-
-
 
     // --- equality & hash based on the string encoding of the cube ---
     public boolean isSolved() {
