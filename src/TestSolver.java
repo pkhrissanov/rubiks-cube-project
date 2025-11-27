@@ -4,16 +4,16 @@ public class TestSolver {
         try {
 
             // Load scrambled cube
-            Cube start = new Cube("scramble01.txt");
+            Cube start = new Cube("scramble03.txt");
 
             System.out.println("========= START CUBE =========");
             start.printNet();
             System.out.println();
 
             // Create solver with depth limit = 5
-            Solver solver = new Solver(6);
+            Solver solver = new Solver(7);
 
-            System.out.println("Running BFS with depth limit 6...\n");
+            System.out.println("Running DFS with depth limit 6...\n");
 
             // Solve the cube using BFS
             CubeGraph.Node solution = solver.solve(start);

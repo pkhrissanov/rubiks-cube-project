@@ -5,7 +5,7 @@ public class MoveTester {
 
     public static void main(String[] args) {
         try {
-            Cube cube = new Cube("scramble01.txt");
+            Cube cube = new Cube("scramble03.txt");
 
             System.out.println("========= START CUBE =========");
             cube.printNet();

@@ -186,9 +186,9 @@ public class Cube implements Cloneable {
                 cube.set(20, cube.get(47));
                 cube.set(23, cube.get(50));
                 cube.set(26, cube.get(53));
-                cube.set(47, cube.get(36));
+                cube.set(47, cube.get(42));
                 cube.set(50, cube.get(39));
-                cube.set(53, cube.get(42));
+                cube.set(53, cube.get(36));
 
                 cube.set(42, ru2);
                 cube.set(39, ru5);

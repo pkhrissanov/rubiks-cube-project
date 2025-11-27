@@ -65,6 +65,18 @@ public class CubeGraph {
         }
     }
 
+    boolean areOpposite(char a, char b) {
+        switch (a) {
+            case 'U': return b == 'D';
+            case 'D': return b == 'U';
+            case 'L': return b == 'R';
+            case 'R': return b == 'L';
+            case 'F': return b == 'B';
+            case 'B': return b == 'F';
+            default: return false;
+        }
+    }
+
 
     public void expandCurrent() {
 
@@ -72,14 +84,19 @@ public class CubeGraph {
 
         for (String mv : MOVES) {
 
-            if (currentNode.parentEdge != null &&
+             String last = currentNode.parentEdge;
+
+            if (last != null &&
                     mv.equals(inverseMove(currentNode.parentEdge))) {
                 continue;
             }
-            
+
+            if (last != null && areOpposite(last.charAt(0), mv.charAt(0))){
+                continue;
+            }
+
             //Prune triple R R R or R' R R'
             if (currentNode.path != null && currentNode.path.size() >= 2) {
-            String last = currentNode.parentEdge;
             String secondLast = currentNode.path.get(currentNode.path.size() - 2);
 
                 if (last != null &&
