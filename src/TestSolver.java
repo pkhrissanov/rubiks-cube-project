@@ -4,14 +4,14 @@ public class TestSolver {
         try {
 
             // Load scrambled cube
-            Cube start = new Cube("scramble03.txt");
+            Cube start = new Cube("testCases/scramble04.txt");
 
             System.out.println("========= START CUBE =========");
             start.printNet();
             System.out.println();
 
             // Create solver with depth limit = 5
-            Solver solver = new Solver(7);
+            Solver solver = new Solver(6);
 
             System.out.println("Running DFS with depth limit 6...\n");
 

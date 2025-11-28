@@ -154,12 +154,12 @@ public class Cube implements Cloneable {
 
                 char lu0 = cube.get(0), lu3 = cube.get(3), lu6 = cube.get(6);
 
-                cube.set(0, cube.get(38));
+                cube.set(0, cube.get(44));
                 cube.set(3, cube.get(41));
-                cube.set(6, cube.get(44));
-                cube.set(38, cube.get(45));
+                cube.set(6, cube.get(38));
+                cube.set(38, cube.get(51));
                 cube.set(41, cube.get(48));
-                cube.set(44, cube.get(51));
+                cube.set(44, cube.get(45));
                 cube.set(45, cube.get(18));
                 cube.set(48, cube.get(21));
                 cube.set(51, cube.get(24));
@@ -236,12 +236,12 @@ public class Cube implements Cloneable {
                 cube.set(0, cube.get(29));
                 cube.set(1, cube.get(32));
                 cube.set(2, cube.get(35));
-                cube.set(9, bu0);
+                cube.set(9, bu2);
                 cube.set(12, bu1);
-                cube.set(15, bu2);
-                cube.set(29, cube.get(51));
+                cube.set(15, bu0);
+                cube.set(29, cube.get(53));
                 cube.set(32, cube.get(52));
-                cube.set(35, cube.get(53));
+                cube.set(35, cube.get(51));
 
                 cube.set(51, bt0);
                 cube.set(52, bt1);
