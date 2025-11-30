@@ -5,6 +5,8 @@ public class Cube implements Cloneable {
 
     public ArrayList<Character> cube;
     public String parentEdge;
+    public float hscore;
+    public int stage;
     // final clean cube: U,L,F,R,B,D contiguous
 
     // --- existing file-reading constructor left unchanged ---
@@ -53,16 +55,60 @@ public class Cube implements Cloneable {
     public Cube(ArrayList<Character> arr) {
         this.cube = new ArrayList<>(arr.size());
         this.cube.addAll(arr);
+        this.hscore = getScore();
     }
 
-    public Cube(){
+    public Cube() {
         cube = new ArrayList<>(54);
-        for(int i = 0; i < 54; i++) cube.add('a');
+        for (int i = 0; i < 54; i++) cube.add('a');
     }
 
-    /**
-     * Helper to deep-clone
-     */
+
+    public void score(Cube cube) {
+        float tempscore = 0;
+
+        if (cube.stage == 1) {
+            for (int i = 0; i < 54; i++) {
+                if ((cube.cube.get(i).equals('G')) && (i == 15 || i == 16 || i == 17)) {
+                    tempscore += 1;
+                }
+                if ((cube.cube.get(i).equals('B')) && (i == 33 || i == 34 || i == 35)) {
+                    tempscore += 1;
+                }
+                if ((cube.cube.get(i).equals('W')) && (i == 24 || i == 25 || i == 26)) {
+                    tempscore += 1;
+                }
+                if ((cube.cube.get(i).equals('Y')) && (i == 42 || i == 43 || i == 44)) {
+                    tempscore += 1;
+                }
+
+            }
+        }
+        if (cube.stage == 2) {
+            for (int i = 0; i < 54; i++) {
+                if ((cube.cube.get(i).equals('G')) && (i == 15 || i == 16 || i == 17 || i == 12 || i == 13 || i == 14)) {
+                    tempscore += 1;
+                }
+                if ((cube.cube.get(i).equals('B')) && (i == 30 || i == 31 || i == 32 || i == 33 || i == 34 || i == 35)) {
+                    tempscore += 1;
+                }
+                if ((cube.cube.get(i).equals('W')) && (i == 21 || i == 22 || i == 23 || i == 24 || i == 25 || i == 26)) {
+                    tempscore += 1;
+                }
+                if ((cube.cube.get(i).equals('Y')) && (i == 39 || i == 40 || i == 41 || i == 42 || i == 43 || i == 44)) {
+                    tempscore += 1;
+                }
+            }
+
+        }
+        this.hscore = tempscore;
+    }
+
+    public float getScore() {
+        score(this);
+        return hscore;
+    }
+
     @Override
     public Cube clone() {
         return new Cube(new ArrayList<>(this.cube));
