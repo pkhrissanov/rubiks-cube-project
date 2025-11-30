@@ -91,10 +91,6 @@ public class CubeGraph {
                 continue;
             }
 
-            if (last != null && areOpposite(last.charAt(0), mv.charAt(0))){
-                continue;
-            }
-
             //Prune triple R R R or R' R R'
             if (currentNode.path != null && currentNode.path.size() >= 2) {
             String secondLast = currentNode.path.get(currentNode.path.size() - 2);

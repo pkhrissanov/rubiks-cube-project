@@ -45,11 +45,6 @@ public class Solver{
         // explore children in DFS order
         for (CubeGraph.Node child : node.children) {
 
-            // cycle check: avoid revisiting any ancestor state
-            if (isCycle(node, child.currentState.toString())) {
-                continue;
-            }
-
             CubeGraph.Node found = dfs(child, limit - 1);
             if (found != null) {
                 return found;
