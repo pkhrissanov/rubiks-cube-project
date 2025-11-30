@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.lang.invoke.MethodHandles;
 
-public class Solver{
+public class Solver {
 
 
     private int maxDepth;
@@ -21,29 +21,37 @@ public class Solver{
             CubeGraph.Node result = dfs(root, depth);
             if (result != null) return result;
         }
-
-        return null;  // no solution found
+        // no solution found
+        return null;
     }
 
     private CubeGraph.Node dfs(CubeGraph.Node node, int limit) {
 
-             // success?
         if (node.currentState.isSolved()) {
             return node;
         }
 
-        // cannot go deeper
-        if (limit == 0) {
-            return null;
-        }
-
-        // expand children
-        CubeGraph graph = new CubeGraph(node.currentState);
-        graph.currentNode = node;
+        CubeGraph graph = new CubeGraph(node);
         graph.expandCurrent();
 
-        // explore children in DFS order
-        for (CubeGraph.Node child : node.children) {
+        if (node.path.size() == limit) {
+            PriorityQueue<CubeGraph.Node> queue = new PriorityQueue<>((a, b) -> Integer.compare(b.score, a.score));
+
+            for (CubeGraph.Node child : node.children) {
+
+                if (isCycle(node, child.currentState.toString())) {
+                    continue;
+                }
+                queue.add(child);
+            }
+
+            return dfs(queue.poll(), limit);
+
+        }
+
+
+        for (
+                CubeGraph.Node child : node.children) {
 
             // cycle check: avoid revisiting any ancestor state
             if (isCycle(node, child.currentState.toString())) {
@@ -59,10 +67,11 @@ public class Solver{
         return null;
     }
 
+
 // heuristic function
     // cube itself -> heuristitic function index to determine howmuch of the cube is solved (layer by latyer)
     // needs to have 3 cases (for checking each layer)
-        //each case has different function to be able to determine how close we are to solving the cube
+    //each case has different function to be able to determine how close we are to solving the cube
 
 
 // implement into generation 3 moves into bfs
@@ -71,22 +80,6 @@ public class Solver{
 // layer by layer choice
     //
 
-
-
-
-
-
-
-
-
-
-
-
-
-    /**
-     * Checks for cycles by comparing this state's string
-     * to all ancestors along the parent chain.
-     */
     private boolean isCycle(CubeGraph.Node node, String newStateString) {
         CubeGraph.Node cur = node;
         while (cur != null) {
@@ -105,7 +98,7 @@ public class Solver{
      * so we infer parent by removing the last move.
      */
     private CubeGraph.Node getParent(CubeGraph.Node node) {
-        if (node.path == null || node.path.size() == 0) return null;
+        if (node.path == null || node.path.isEmpty()) return null;
 
         try {
             ArrayList<String> parentPath = new ArrayList<>(node.path);
@@ -115,8 +108,8 @@ public class Solver{
             parentCube.move(inverseMove(node.parentEdge)); // undo last move
 
             return new CubeGraph.Node(parentCube,
-                                      (parentPath.size() > 0 ? parentPath.get(parentPath.size()-1) : null),
-                                      parentPath);
+                    (!parentPath.isEmpty() ? parentPath.getLast() : null),
+                    parentPath);
 
         } catch (Exception e) {
             return null;
@@ -125,19 +118,32 @@ public class Solver{
 
     private String inverseMove(String move) {
         switch (move) {
-            case "U": return "U'";
-            case "U'": return "U";
-            case "D": return "D'";
-            case "D'": return "D";
-            case "L": return "L'";
-            case "L'": return "L";
-            case "R": return "R'";
-            case "R'": return "R";
-            case "F": return "F'";
-            case "F'": return "F";
-            case "B": return "B'";
-            case "B'": return "B";
+            case "U":
+                return "U'";
+            case "U'":
+                return "U";
+            case "D":
+                return "D'";
+            case "D'":
+                return "D";
+            case "L":
+                return "L'";
+            case "L'":
+                return "L";
+            case "R":
+                return "R'";
+            case "R'":
+                return "R";
+            case "F":
+                return "F'";
+            case "F'":
+                return "F";
+            case "B":
+                return "B'";
+            case "B'":
+                return "B";
         }
         return null;
     }
 }
+

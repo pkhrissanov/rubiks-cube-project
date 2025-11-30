@@ -5,8 +5,8 @@ public class Cube implements Cloneable {
 
     public ArrayList<Character> cube;
     public String parentEdge;
-    public float hscore;
-    public int stage;
+    public int hscore;
+    public int stage = 2;
     // final clean cube: U,L,F,R,B,D contiguous
 
     // --- existing file-reading constructor left unchanged ---
@@ -52,11 +52,15 @@ public class Cube implements Cloneable {
     /**
      * Copy constructor for creating clones
      */
+
+
     public Cube(ArrayList<Character> arr) {
         this.cube = new ArrayList<>(arr.size());
         this.cube.addAll(arr);
         this.hscore = getScore();
     }
+
+
 
     public Cube() {
         cube = new ArrayList<>(54);
@@ -65,7 +69,7 @@ public class Cube implements Cloneable {
 
 
     public void score(Cube cube) {
-        float tempscore = 0;
+        int tempscore = 0;
 
         if (cube.stage == 1) {
             for (int i = 0; i < 54; i++) {
@@ -104,7 +108,7 @@ public class Cube implements Cloneable {
         this.hscore = tempscore;
     }
 
-    public float getScore() {
+    public int getScore() {
         score(this);
         return hscore;
     }

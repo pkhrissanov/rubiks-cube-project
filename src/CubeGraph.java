@@ -8,6 +8,7 @@ public class CubeGraph {
         public String parentEdge;
         public ArrayList<String> path;
         public ArrayList<Node> children;
+        public int score;
 
 
         public Node(Cube cur, String parentEdge, ArrayList<String> path) {
@@ -15,15 +16,22 @@ public class CubeGraph {
             this.parentEdge = parentEdge;
             this.path = path;
             this.children = new ArrayList<>(12);
+            this.score = nodeScore(cur, path);
+        }
+
+        public int nodeScore(Cube cube, ArrayList<String> path) {
+            if (path == null) return cube.getScore();
+            return path.size() + cube.getScore();
         }
     }
 
 
     Node currentNode;
 
-    public CubeGraph(Cube startCube) {
-        this.currentNode = new Node(startCube, null, null);
+    public CubeGraph(CubeGraph.Node node) {
+        this.currentNode = node;
     }
+
     public CubeGraph() {
         this.currentNode = new Node(null, null, null);
     }
@@ -67,13 +75,20 @@ public class CubeGraph {
 
     boolean areOpposite(char a, char b) {
         switch (a) {
-            case 'U': return b == 'D';
-            case 'D': return b == 'U';
-            case 'L': return b == 'R';
-            case 'R': return b == 'L';
-            case 'F': return b == 'B';
-            case 'B': return b == 'F';
-            default: return false;
+            case 'U':
+                return b == 'D';
+            case 'D':
+                return b == 'U';
+            case 'L':
+                return b == 'R';
+            case 'R':
+                return b == 'L';
+            case 'F':
+                return b == 'B';
+            case 'B':
+                return b == 'F';
+            default:
+                return false;
         }
     }
 
@@ -84,24 +99,24 @@ public class CubeGraph {
 
         for (String mv : MOVES) {
 
-             String last = currentNode.parentEdge;
+            String last = currentNode.parentEdge;
 
             if (last != null &&
                     mv.equals(inverseMove(currentNode.parentEdge))) {
                 continue;
             }
 
-            if (last != null && areOpposite(last.charAt(0), mv.charAt(0))){
+            if (last != null && areOpposite(last.charAt(0), mv.charAt(0))) {
                 continue;
             }
 
             //Prune triple R R R or R' R R'
             if (currentNode.path != null && currentNode.path.size() >= 2) {
-            String secondLast = currentNode.path.get(currentNode.path.size() - 2);
+                String secondLast = currentNode.path.get(currentNode.path.size() - 2);
 
                 if (last != null &&
-                    last.charAt(0) == mv.charAt(0) &&
-                    secondLast.charAt(0) == mv.charAt(0)) {       
+                        last.charAt(0) == mv.charAt(0) &&
+                        secondLast.charAt(0) == mv.charAt(0)) {
                     continue;
                 }
             }
