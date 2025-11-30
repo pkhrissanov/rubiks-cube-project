@@ -59,6 +59,30 @@ public class Solver{
         return null;
     }
 
+// heuristic function
+    // cube itself -> heuristitic function index to determine howmuch of the cube is solved (layer by latyer)
+    // needs to have 3 cases (for checking each layer)
+        //each case has different function to be able to determine how close we are to solving the cube
+
+
+// implement into generation 3 moves into bfs
+//make go back logic
+//best picker
+// layer by layer choice
+    //
+
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * Checks for cycles by comparing this state's string
      * to all ancestors along the parent chain.
