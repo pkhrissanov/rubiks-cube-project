@@ -108,7 +108,6 @@ public class Cube implements Cloneable {
 
     public ArrayList<Character> move(String m) {
         switch (m) {
-            // --- Single Moves (U, U', D, D', L, L', R, R', F, F', B, B') ---
             case "U":
                 rotateFaceCW(0);
                 char u0 = cube.get(9), u1 = cube.get(10), u2 = cube.get(11);
@@ -266,7 +265,7 @@ public class Cube implements Cloneable {
                 move("B");
                 break;
             
-            // --- NEW: Double Moves (X2) ---
+            // --- Double Moves (X2) ---
             case "U2":
                 move("U");
                 move("U");
@@ -346,6 +345,9 @@ public class Cube implements Cloneable {
         return true;
     }
 
+    /**
+     * Goal Check: Checks if the Down (D) face cross is solved.
+     */
     public boolean isCrossSolved() {
         char D_CENTER = cube.get(49);
         char F_CENTER = cube.get(22);
@@ -364,6 +366,40 @@ public class Cube implements Cloneable {
         return true;
     }
 
+    /**
+     * Heuristic: Counts the number of cross edge stickers that are NOT in their correct position/orientation.
+     * Used for A* search in the Cross stage.
+     */
+    public int getCrossHeuristic() {
+        char D_CENTER = cube.get(49);
+        char F_CENTER = cube.get(22);
+        char R_CENTER = cube.get(31);
+        char B_CENTER = cube.get(40);
+        char L_CENTER = cube.get(13);
+
+        // Cross stickers: D-face (46, 50, 52, 48) and Adjacent face (25, 34, 43, 16)
+        int[] dFaceIndices = {46, 50, 52, 48}; 
+        int[] adjFaceIndices = {25, 34, 43, 16};
+        char[] adjCenters = {F_CENTER, R_CENTER, B_CENTER, L_CENTER};
+        
+        int misplacedStickers = 0;
+
+        for (int i = 0; i < 4; i++) {
+            // Check D face sticker
+            if (cube.get(dFaceIndices[i]) != D_CENTER) {
+                misplacedStickers++;
+            }
+            // Check adjacent face sticker
+            if (cube.get(adjFaceIndices[i]) != adjCenters[i]) {
+                misplacedStickers++;
+            }
+        }
+        return misplacedStickers;
+    }
+
+    /**
+     * Goal Check: Checks if the first two layers (F2L) are solved.
+     */
     public boolean isF2LSolved() {
         if (!isCrossSolved()) return false;
 
@@ -384,6 +420,9 @@ public class Cube implements Cloneable {
         return true;
     }
 
+    /**
+     * Goal Check: Checks if the entire U face is oriented (ready for PLL).
+     */
     public boolean isOLLSolved() {
         char U_CENTER = cube.get(4);
         
@@ -395,6 +434,9 @@ public class Cube implements Cloneable {
         return true;
     }
     
+    /**
+     * Integrity Check: Checks if the F2L (D and middle layers) is solved and preserved.
+     */
     public boolean isF2LPreserved() {
         char[] centers = getCenterColors();
         int[] f2lStickers = {

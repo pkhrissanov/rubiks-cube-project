@@ -4,7 +4,7 @@ public class TestSolver {
         try {
 
             // Load scrambled cube
-            Cube start = new Cube("testCases/scramble15.txt");
+            Cube start = new Cube("testCases/scramble08.txt");
 
             System.out.println("========= START CUBE =========");
             start.printNet();
