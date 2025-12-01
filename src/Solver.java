@@ -54,10 +54,6 @@ public class Solver{
         return null;
     }
 
-    /**
-     * Checks for cycles by comparing this state's string
-     * to all ancestors along the parent chain.
-     */
     private boolean isCycle(CubeGraph.Node node, String newStateString) {
         CubeGraph.Node cur = node;
         while (cur != null) {
@@ -70,11 +66,10 @@ public class Solver{
         return false;
     }
 
-    /**
-     * Reconstructs parent node by undoing last move.
-     * Minimal-impact helper. Your Node does not store parent,
-     * so we infer parent by removing the last move.
-     */
+
+
+
+
     private CubeGraph.Node getParent(CubeGraph.Node node) {
         if (node.path == null || node.path.size() == 0) return null;
 
@@ -111,4 +106,48 @@ public class Solver{
         }
         return null;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
+
+
+
+
+/*
+solver
+    1. do bfs of depth 7 to find any quick solutions, if no solution, move to next solver
+
+    2. Human method solver
+            going from intial cube - use the white cross heuristic to figure out where to go
+
+            once hit white cross - switch heuristic to f2l, solve until f2l
+            after f2l - switch heuristic again - OLL solve
+            PLL heuristic and solve
+
+
+
+
+
+
+
+
+
+ */
