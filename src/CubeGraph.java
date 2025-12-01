@@ -13,7 +13,8 @@ public class CubeGraph {
         public Node(Cube cur, String parentEdge, ArrayList<String> path) {
             this.currentState = cur;
             this.parentEdge = parentEdge;
-            this.path = path;
+            // FIX: Ensure path is never null. Create a defensive copy.
+            this.path = (path != null) ? new ArrayList<>(path) : new ArrayList<>();
             this.children = new ArrayList<>(12);
         }
     }
@@ -22,10 +23,10 @@ public class CubeGraph {
     Node currentNode;
 
     public CubeGraph(Cube startCube) {
-        this.currentNode = new Node(startCube, null, null);
+        this.currentNode = new Node(startCube, null, new ArrayList<>());
     }
     public CubeGraph() {
-        this.currentNode = new Node(null, null, null);
+        this.currentNode = new Node(null, null, new ArrayList<>());
     }
 
     public Node getCurrentNode() {
@@ -106,7 +107,7 @@ public class CubeGraph {
             nextCube.move(mv);
             nextCube.parentEdge = mv;
             ArrayList<String> newPath = new ArrayList<>();
-            if (currentNode.path != null) newPath.addAll(currentNode.path);
+            newPath.addAll(currentNode.path);
             newPath.add(mv);
             Node child = new Node(nextCube, mv, newPath);
             currentNode.children.add(child);

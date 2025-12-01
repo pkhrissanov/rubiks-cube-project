@@ -1,92 +1,202 @@
-
-import java.io.File;
-import java.io.*;
 import java.util.*;
-import java.lang.invoke.MethodHandles;
 
-public class Solver{
-
+public class Solver {
 
     private int maxDepth;
+    private final Map<String, String> OLL_ALGORITHMS;
+    private final Map<String, String> PLL_ALGORITHMS;
+    
+    // Define StageGoalChecker instances as fields for reliable comparison
+    private final StageGoalChecker IS_CROSS_SOLVED = this::isCrossSolved;
+    private final StageGoalChecker IS_F2L_SOLVED = this::isF2LSolved;
+    private final StageGoalChecker IS_OLL_SOLVED = this::isOLLSolved;
 
     public Solver(int maxDepth) {
         this.maxDepth = maxDepth;
+        
+        // --- Simplified Lookup Tables for Demonstration ---
+        this.OLL_ALGORITHMS = new HashMap<>();
+        // Example OLL Algorithm (Sune Case: solves a single solved corner case)
+        OLL_ALGORITHMS.put("SUNE", "R U R' U R U2 R'");
+
+        this.PLL_ALGORITHMS = new HashMap<>();
+        // Example PLL Algorithm (T-Permutation)
+        PLL_ALGORITHMS.put("T_PERM", "R U R' U' R' F R2 U' R' U' R U R' F'");
     }
 
+    /**
+     * Attempts to apply a direct algorithm sequence from a lookup map to solve a stage.
+     */
+    private CubeGraph.Node stageApplyAlgorithm(Cube start, StageGoalChecker goalChecker, Map<String, String> algMap, String stageName, ArrayList<String> previousPath) {
+        
+        if (algMap.isEmpty()) return null;
+
+        for (Map.Entry<String, String> entry : algMap.entrySet()) {
+            String algorithm = entry.getValue();
+            String patternName = entry.getKey();
+            
+            System.out.println("Attempting Algorithm: " + patternName + " (" + algorithm + ")");
+
+            Cube currentCube = start.clone();
+            ArrayList<String> algorithmPath = new ArrayList<>();
+            String[] moves = algorithm.split(" ");
+            
+            for (String move : moves) {
+                currentCube.move(move);
+                algorithmPath.add(move);
+            }
+
+            // After applying the algorithm, check if the goal is met AND F2L is preserved.
+            if (goalChecker.check(currentCube) && currentCube.isF2LPreserved()) {
+                System.out.println(stageName + " solved via Algorithm: " + patternName);
+                
+                // The full path is the previous stage path + the new algorithm path
+                ArrayList<String> fullPath = new ArrayList<>(previousPath);
+                fullPath.addAll(algorithmPath);
+                
+                return new CubeGraph.Node(currentCube, algorithmPath.get(algorithmPath.size() - 1), fullPath);
+            }
+        }
+
+        return null; // Algorithm didn't solve the state
+    }
+
+
+    /**
+     * Solves the cube using a four-stage CFOP-like approach.
+     */
     public CubeGraph.Node solve(Cube start) {
-        CubeGraph.Node root = new CubeGraph.Node(start, null, new ArrayList<>());
+        // Path accumulator for all stages
+        ArrayList<String> fullPath = new ArrayList<>();
+        Cube nextStageStart = start;
+        CubeGraph.Node finalResult = null;
+        
+        // --- Stage 1: Cross (Search based) ---
+        System.out.println("Starting Stage 1: Cross...");
+        CubeGraph.Node stage1Result = stageSearch(nextStageStart, IS_CROSS_SOLVED, maxDepth);
+        if (stage1Result == null) return null;
+        nextStageStart = stage1Result.currentState;
+        fullPath.addAll(stage1Result.path);
+        finalResult = new CubeGraph.Node(nextStageStart, stage1Result.parentEdge, fullPath);
+        System.out.println("--- Stage 1 (Cross) Solved in " + stage1Result.path.size() + " moves ---");
+        
+        // --- Stage 2: F2L (Search based) ---
+        System.out.println("\nStarting Stage 2: F2L...");
+        CubeGraph.Node stage2Result = stageSearch(nextStageStart, IS_F2L_SOLVED, maxDepth + 5);
+        if (stage2Result == null) { System.out.println("F2L failed. Stopping."); return finalResult; }
+        nextStageStart = stage2Result.currentState;
+        fullPath.addAll(stage2Result.path);
+        finalResult = new CubeGraph.Node(nextStageStart, stage2Result.parentEdge, fullPath);
+        System.out.println("--- Stage 2 (F2L) Solved in " + stage2Result.path.size() + " relative moves ---");
+        
+        // --- Stage 3: OLL (Algorithm lookup/application based) ---
+        System.out.println("\nStarting Stage 3: OLL...");
+        CubeGraph.Node stage3Result = stageApplyAlgorithm(nextStageStart, IS_OLL_SOLVED, OLL_ALGORITHMS, "OLL", fullPath);
 
-        // Iterative deepening loop
-        for (int depth = 0; depth <= maxDepth; depth++) {
-            CubeGraph.Node result = dfs(root, depth);
-            if (result != null) return result;
+        if (stage3Result != null) {
+            nextStageStart = stage3Result.currentState;
+            fullPath = stage3Result.path; // Path is already merged in stageApplyAlgorithm
+            finalResult = new CubeGraph.Node(nextStageStart, stage3Result.parentEdge, fullPath);
+        } else {
+             System.out.println("OLL failed to solve using hardcoded algorithms. Proceeding to PLL attempt.");
         }
 
-        return null;  // no solution found
+
+        // --- Stage 4: PLL (Algorithm lookup/application based) ---
+        System.out.println("\nStarting Stage 4: PLL...");
+        CubeGraph.Node stage4Result = stageApplyAlgorithm(nextStageStart, Cube::isSolved, PLL_ALGORITHMS, "PLL", fullPath);
+
+        if (stage4Result != null) {
+            nextStageStart = stage4Result.currentState;
+            fullPath = stage4Result.path; // Path is already merged in stageApplyAlgorithm
+            finalResult = new CubeGraph.Node(nextStageStart, stage4Result.parentEdge, fullPath);
+        } else {
+            System.out.println("PLL failed to solve using hardcoded algorithms.");
+        }
+
+
+        // --- Final Node Construction and Reporting ---
+        System.out.println("\n--- Solver Finished ---");
+        System.out.println("Total Path Length: " + finalResult.path.size() + " moves.");
+        System.out.println("Total Path: " + String.join(" ", finalResult.path));
+
+        return finalResult;
+    }
+    
+    
+    private boolean isCrossSolved(Cube cube) {
+        return cube.isCrossSolved();
     }
 
-    private CubeGraph.Node dfs(CubeGraph.Node node, int limit) {
+    private boolean isF2LSolved(Cube cube) {
+        return cube.isF2LSolved();
+    }
+    
+    private boolean isOLLSolved(Cube cube) {
+        return cube.isOLLSolved();
+    }
+    
 
-             // success?
-        if (node.currentState.isSolved()) {
-            return node;
-        }
+    private CubeGraph.Node stageSearch(Cube start, StageGoalChecker goalChecker, int limit) {
+        Queue<CubeGraph.Node> queue = new LinkedList<>();
+        Set<String> visited = new HashSet<>();
+        
+        CubeGraph.Node root = new CubeGraph.Node(start, null, new ArrayList<>()); 
+        queue.add(root);
+        visited.add(start.toString());
 
-        // cannot go deeper
-        if (limit == 0) {
-            return null;
-        }
+        while (!queue.isEmpty()) {
+            CubeGraph.Node node = queue.poll();
+            
+            if (goalChecker.check(node.currentState)) {
+                return node;
+            }
+            
+            if (node.path.size() >= limit) { 
+                continue;
+            }
 
-        // expand children
-        CubeGraph graph = new CubeGraph(node.currentState);
-        graph.currentNode = node;
-        graph.expandCurrent();
+            CubeGraph graph = new CubeGraph(node.currentState);
+            graph.currentNode = node;
+            graph.expandCurrent();
 
-        // explore children in DFS order
-        for (CubeGraph.Node child : node.children) {
+            for (CubeGraph.Node child : node.children) {
+                if (!visited.contains(child.currentState.toString())) {
+                    
+                    // Corrected F2L Preservation Check: 
+                    // If we are searching for a goal other than Cross (i.e., F2L or later),
+                    // prune moves that break the solved F2L layers (including the Cross).
+                    if (goalChecker != IS_CROSS_SOLVED) {
+                        if (!child.currentState.isF2LPreserved()) {
+                            continue;
+                        }
+                    }
 
-            CubeGraph.Node found = dfs(child, limit - 1);
-            if (found != null) {
-                return found;
+                    visited.add(child.currentState.toString());
+                    queue.add(child);
+                }
             }
         }
 
         return null;
     }
 
-    /**
-     * Checks for cycles by comparing this state's string
-     * to all ancestors along the parent chain.
-     */
-    private boolean isCycle(CubeGraph.Node node, String newStateString) {
-        CubeGraph.Node cur = node;
-        while (cur != null) {
-            if (cur.currentState.toString().equals(newStateString)) {
-                return true;
-            }
-            // climb using parent path (we infer parent via path)
-            cur = getParent(cur);
-        }
-        return false;
+    private interface StageGoalChecker {
+        boolean check(Cube cube);
     }
-
-    /**
-     * Reconstructs parent node by undoing last move.
-     * Minimal-impact helper. Your Node does not store parent,
-     * so we infer parent by removing the last move.
-     */
+    
     private CubeGraph.Node getParent(CubeGraph.Node node) {
-        if (node.path == null || node.path.size() == 0) return null;
+        if (node.path.isEmpty()) return null;
 
         try {
             ArrayList<String> parentPath = new ArrayList<>(node.path);
-            parentPath.remove(parentPath.size() - 1);
+            String lastMove = parentPath.remove(parentPath.size() - 1);
 
             Cube parentCube = node.currentState.clone();
-            parentCube.move(inverseMove(node.parentEdge)); // undo last move
+            parentCube.move(inverseMove(lastMove));
 
             return new CubeGraph.Node(parentCube,
-                                      (parentPath.size() > 0 ? parentPath.get(parentPath.size()-1) : null),
+                                      (parentPath.isEmpty() ? null : parentPath.get(parentPath.size()-1)),
                                       parentPath);
 
         } catch (Exception e) {

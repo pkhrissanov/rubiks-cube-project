@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Cube implements Cloneable {
 
@@ -7,9 +8,19 @@ public class Cube implements Cloneable {
     public String parentEdge;
     public float hscore;
     public int stage;
-    // final clean cube: U,L,F,R,B,D contiguous
 
-    // --- existing file-reading constructor left unchanged ---
+    // Center colors: U, L, F, R, B, D (indices 4, 13, 22, 31, 40, 49)
+    public char[] getCenterColors() {
+        return new char[]{
+                cube.get(4),  // U (index 4)
+                cube.get(13), // L (index 13)
+                cube.get(22), // F (index 22)
+                cube.get(31), // R (index 31)
+                cube.get(40), // B (index 40)
+                cube.get(49)  // D (index 49)
+        };
+    }
+
     public Cube(String fileName) throws IOException {
         File file = new File(fileName);
         if (!file.exists() || !file.canRead()) {
@@ -49,13 +60,9 @@ public class Cube implements Cloneable {
                 cube.set(idx++, lines.get(r).charAt(c));
     }
 
-    /**
-     * Copy constructor for creating clones
-     */
     public Cube(ArrayList<Character> arr) {
         this.cube = new ArrayList<>(arr.size());
         this.cube.addAll(arr);
-        this.hscore = getScore();
     }
 
     public Cube() {
@@ -63,55 +70,17 @@ public class Cube implements Cloneable {
         for (int i = 0; i < 54; i++) cube.add('a');
     }
 
-
-    public void score(Cube cube) {
-        float tempscore = 0;
-
-        if (cube.stage == 1) {
-            for (int i = 0; i < 54; i++) {
-                if ((cube.cube.get(i).equals('G')) && (i == 15 || i == 16 || i == 17)) {
-                    tempscore += 1;
-                }
-                if ((cube.cube.get(i).equals('B')) && (i == 33 || i == 34 || i == 35)) {
-                    tempscore += 1;
-                }
-                if ((cube.cube.get(i).equals('W')) && (i == 24 || i == 25 || i == 26)) {
-                    tempscore += 1;
-                }
-                if ((cube.cube.get(i).equals('Y')) && (i == 42 || i == 43 || i == 44)) {
-                    tempscore += 1;
-                }
-
-            }
-        }
-        if (cube.stage == 2) {
-            for (int i = 0; i < 54; i++) {
-                if ((cube.cube.get(i).equals('G')) && (i == 15 || i == 16 || i == 17 || i == 12 || i == 13 || i == 14)) {
-                    tempscore += 1;
-                }
-                if ((cube.cube.get(i).equals('B')) && (i == 30 || i == 31 || i == 32 || i == 33 || i == 34 || i == 35)) {
-                    tempscore += 1;
-                }
-                if ((cube.cube.get(i).equals('W')) && (i == 21 || i == 22 || i == 23 || i == 24 || i == 25 || i == 26)) {
-                    tempscore += 1;
-                }
-                if ((cube.cube.get(i).equals('Y')) && (i == 39 || i == 40 || i == 41 || i == 42 || i == 43 || i == 44)) {
-                    tempscore += 1;
-                }
-            }
-
-        }
-        this.hscore = tempscore;
-    }
-
     public float getScore() {
-        score(this);
-        return hscore;
+        return 0;
     }
 
     @Override
     public Cube clone() {
-        return new Cube(new ArrayList<>(this.cube));
+        Cube cloned = new Cube(new ArrayList<>(this.cube));
+        cloned.parentEdge = this.parentEdge;
+        cloned.hscore = this.hscore;
+        cloned.stage = this.stage;
+        return cloned;
     }
 
     @Override
@@ -121,9 +90,6 @@ public class Cube implements Cloneable {
         return sb.toString();
     }
 
-    // determine if cube is solved: each face's 9 stickers equal to face center
-
-    // --- your swap/rotateFaceCW and move methods (unchanged) ---
     private void swap(int a, int b) {
         char t = cube.get(a);
         cube.set(a, cube.get(b));
@@ -141,8 +107,8 @@ public class Cube implements Cloneable {
     }
 
     public ArrayList<Character> move(String m) {
-
         switch (m) {
+            // --- Single Moves (U, U', D, D', L, L', R, R', F, F', B, B') ---
             case "U":
                 rotateFaceCW(0);
                 char u0 = cube.get(9), u1 = cube.get(10), u2 = cube.get(11);
@@ -299,6 +265,32 @@ public class Cube implements Cloneable {
                 move("B");
                 move("B");
                 break;
+            
+            // --- NEW: Double Moves (X2) ---
+            case "U2":
+                move("U");
+                move("U");
+                break;
+            case "D2":
+                move("D");
+                move("D");
+                break;
+            case "L2":
+                move("L");
+                move("L");
+                break;
+            case "R2":
+                move("R");
+                move("R");
+                break;
+            case "F2":
+                move("F");
+                move("F");
+                break;
+            case "B2":
+                move("B");
+                move("B");
+                break;
 
             default:
                 throw new IllegalArgumentException("Invalid move: " + m);
@@ -306,7 +298,6 @@ public class Cube implements Cloneable {
         return this.cube;
     }
 
-    // Printing unchanged
     public void printNet() {
         String s = this.toString();
 
@@ -333,16 +324,94 @@ public class Cube implements Cloneable {
         System.out.println("   " + s.substring(51, 54) + "   ");
     }
 
-    // --- equality & hash based on the string encoding of the cube ---
     public boolean isSolved() {
-        return this.toString().equals(
-                "OOOOOOOOO" +
-                        "GGGGGGGGG" +
-                        "WWWWWWWWW" +
-                        "BBBBBBBBB" +
-                        "YYYYYYYYY" +
-                        "RRRRRRRRR"
-        );
+        char[] centers = getCenterColors();
+        int[][] faceStickerIndices = {
+            {0, 1, 2, 3, 4, 5, 6, 7, 8},      // U face
+            {9, 10, 11, 12, 13, 14, 15, 16, 17}, // L face
+            {18, 19, 20, 21, 22, 23, 24, 25, 26}, // F face
+            {27, 28, 29, 30, 31, 32, 33, 34, 35}, // R face
+            {36, 37, 38, 39, 40, 41, 42, 43, 44}, // B face
+            {45, 46, 47, 48, 49, 50, 51, 52, 53}  // D face
+        };
+
+        for (int i = 0; i < 6; i++) {
+            char centerColor = centers[i];
+            for (int index : faceStickerIndices[i]) {
+                if (cube.get(index) != centerColor) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
+    public boolean isCrossSolved() {
+        char D_CENTER = cube.get(49);
+        char F_CENTER = cube.get(22);
+        char R_CENTER = cube.get(31);
+        char B_CENTER = cube.get(40);
+        char L_CENTER = cube.get(13);
+
+        int[] dFaceIndices = {46, 50, 52, 48}; // D face stickers of the cross
+        int[] adjFaceIndices = {25, 34, 43, 16}; // Adjacent stickers
+        char[] adjCenters = {F_CENTER, R_CENTER, B_CENTER, L_CENTER};
+
+        for (int i = 0; i < 4; i++) {
+            if (cube.get(dFaceIndices[i]) != D_CENTER) return false;
+            if (cube.get(adjFaceIndices[i]) != adjCenters[i]) return false;
+        }
+        return true;
+    }
+
+    public boolean isF2LSolved() {
+        if (!isCrossSolved()) return false;
+
+        int[] f2lStickers = {
+                21, 23, 30, 32, 39, 41, 12, 14, 
+                24, 26, 33, 35, 42, 44, 15, 17, 
+                45, 47, 51, 53 
+        };
+
+        for (int index : f2lStickers) {
+            int faceIndex = index / 9; 
+            char targetCenter = getCenterColors()[faceIndex];
+            if (cube.get(index) != targetCenter) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean isOLLSolved() {
+        char U_CENTER = cube.get(4);
+        
+        for (int i = 0; i < 9; i++) {
+            if (cube.get(i) != U_CENTER) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public boolean isF2LPreserved() {
+        char[] centers = getCenterColors();
+        int[] f2lStickers = {
+                9, 10, 11, 12, 13, 14, 15, 16, 17, 
+                18, 19, 20, 21, 22, 23, 24, 25, 26, 
+                27, 28, 29, 30, 31, 32, 33, 34, 35, 
+                36, 37, 38, 39, 40, 41, 42, 43, 44, 
+                45, 46, 47, 48, 49, 50, 51, 52, 53  
+        };
+
+        for (int index : f2lStickers) {
+            int faceIndex = index / 9; 
+            char targetCenter = centers[faceIndex];
+            if (cube.get(index) != targetCenter) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
