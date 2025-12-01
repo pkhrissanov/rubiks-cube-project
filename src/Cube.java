@@ -345,9 +345,7 @@ public class Cube implements Cloneable {
         return true;
     }
 
-    /**
-     * Goal Check: Checks if the Down (D) face cross is solved.
-     */
+    // --- Goal Check: Cross (Stage 1) ---
     public boolean isCrossSolved() {
         char D_CENTER = cube.get(49);
         char F_CENTER = cube.get(22);
@@ -366,10 +364,7 @@ public class Cube implements Cloneable {
         return true;
     }
 
-    /**
-     * Heuristic: Counts the number of cross edge stickers that are NOT in their correct position/orientation.
-     * Used for A* search in the Cross stage.
-     */
+    // --- Heuristic: Cross (Stage 1) ---
     public int getCrossHeuristic() {
         char D_CENTER = cube.get(49);
         char F_CENTER = cube.get(22);
@@ -377,7 +372,6 @@ public class Cube implements Cloneable {
         char B_CENTER = cube.get(40);
         char L_CENTER = cube.get(13);
 
-        // Cross stickers: D-face (46, 50, 52, 48) and Adjacent face (25, 34, 43, 16)
         int[] dFaceIndices = {46, 50, 52, 48}; 
         int[] adjFaceIndices = {25, 34, 43, 16};
         char[] adjCenters = {F_CENTER, R_CENTER, B_CENTER, L_CENTER};
@@ -385,72 +379,179 @@ public class Cube implements Cloneable {
         int misplacedStickers = 0;
 
         for (int i = 0; i < 4; i++) {
-            // Check D face sticker
             if (cube.get(dFaceIndices[i]) != D_CENTER) {
                 misplacedStickers++;
             }
-            // Check adjacent face sticker
             if (cube.get(adjFaceIndices[i]) != adjCenters[i]) {
                 misplacedStickers++;
             }
         }
         return misplacedStickers;
     }
-
-    /**
-     * Goal Check: Checks if the first two layers (F2L) are solved.
-     */
-    public boolean isF2LSolved() {
-        if (!isCrossSolved()) return false;
-
-        int[] f2lStickers = {
-                21, 23, 30, 32, 39, 41, 12, 14, 
-                24, 26, 33, 35, 42, 44, 15, 17, 
-                45, 47, 51, 53 
-        };
-
-        for (int index : f2lStickers) {
-            int faceIndex = index / 9; 
-            char targetCenter = getCenterColors()[faceIndex];
-            if (cube.get(index) != targetCenter) {
-                return false;
-            }
+    
+    // Helper function for F2L pair checks
+    private boolean checkF2LPair(int[] cornerIndices, char[] cornerTargets, int[] edgeIndices, char[] edgeTargets) {
+        for (int i = 0; i < cornerIndices.length; i++) {
+            if (cube.get(cornerIndices[i]) != cornerTargets[i]) return false;
         }
-
+        for (int i = 0; i < edgeIndices.length; i++) {
+            if (cube.get(edgeIndices[i]) != edgeTargets[i]) return false;
+        }
         return true;
     }
 
-    /**
-     * Goal Check: Checks if the entire U face is oriented (ready for PLL).
-     */
+    private int getF2LPairHeuristic(int[] cornerIndices, char[] cornerTargets, int[] edgeIndices, char[] edgeTargets) {
+        int misplaced = 0;
+        for (int i = 0; i < cornerIndices.length; i++) {
+            if (cube.get(cornerIndices[i]) != cornerTargets[i]) misplaced++;
+        }
+        for (int i = 0; i < edgeIndices.length; i++) {
+            if (cube.get(edgeIndices[i]) != edgeTargets[i]) misplaced++;
+        }
+        return misplaced;
+    }
+
+
+    // --- F2L PAIR 1 (FR Slot: F/R/D Corner + F/R Edge) ---
+    public boolean isF2LPair1Solved() {
+        if (!isCrossSolved()) return false;
+        char F_CENTER = cube.get(22);
+        char R_CENTER = cube.get(31);
+        char D_CENTER = cube.get(49);
+        
+        int[] cornerStickers = {26, 35, 53};
+        char[] cornerTargetColors = {F_CENTER, R_CENTER, D_CENTER};
+        int[] edgeStickers = {25, 34};
+        char[] edgeTargetColors = {F_CENTER, R_CENTER};
+        
+        return checkF2LPair(cornerStickers, cornerTargetColors, edgeStickers, edgeTargetColors);
+    }
+    
+    public int getF2LPair1Heuristic() {
+        char F_CENTER = cube.get(22);
+        char R_CENTER = cube.get(31);
+        char D_CENTER = cube.get(49);
+        
+        int[] cornerStickers = {26, 35, 53};
+        char[] cornerTargetColors = {F_CENTER, R_CENTER, D_CENTER};
+        int[] edgeStickers = {25, 34};
+        char[] edgeTargetColors = {F_CENTER, R_CENTER};
+        
+        return getF2LPairHeuristic(cornerStickers, cornerTargetColors, edgeStickers, edgeTargetColors);
+    }
+    
+    // --- F2L PAIR 2 (RB Slot: R/B/D Corner + R/B Edge) ---
+    public boolean isF2LPair2Solved() {
+        if (!isCrossSolved()) return false;
+        char R_CENTER = cube.get(31);
+        char B_CENTER = cube.get(40);
+        char D_CENTER = cube.get(49);
+        
+        int[] cornerStickers = {33, 44, 50};
+        char[] cornerTargetColors = {R_CENTER, B_CENTER, D_CENTER};
+        int[] edgeStickers = {32, 43};
+        char[] edgeTargetColors = {R_CENTER, B_CENTER};
+        
+        return checkF2LPair(cornerStickers, cornerTargetColors, edgeStickers, edgeTargetColors);
+    }
+    
+    public int getF2LPair2Heuristic() {
+        char R_CENTER = cube.get(31);
+        char B_CENTER = cube.get(40);
+        char D_CENTER = cube.get(49);
+        
+        int[] cornerStickers = {33, 44, 50};
+        char[] cornerTargetColors = {R_CENTER, B_CENTER, D_CENTER};
+        int[] edgeStickers = {32, 43};
+        char[] edgeTargetColors = {R_CENTER, B_CENTER};
+        
+        return getF2LPairHeuristic(cornerStickers, cornerTargetColors, edgeStickers, edgeTargetColors);
+    }
+    
+    // --- F2L PAIR 3 (BL Slot: B/L/D Corner + B/L Edge) ---
+    public boolean isF2LPair3Solved() {
+        if (!isCrossSolved()) return false;
+        char B_CENTER = cube.get(40);
+        char L_CENTER = cube.get(13);
+        char D_CENTER = cube.get(49);
+        
+        int[] cornerStickers = {42, 17, 48};
+        char[] cornerTargetColors = {B_CENTER, L_CENTER, D_CENTER};
+        int[] edgeStickers = {41, 16};
+        char[] edgeTargetColors = {B_CENTER, L_CENTER};
+        
+        return checkF2LPair(cornerStickers, cornerTargetColors, edgeStickers, edgeTargetColors);
+    }
+    
+    public int getF2LPair3Heuristic() {
+        char B_CENTER = cube.get(40);
+        char L_CENTER = cube.get(13);
+        char D_CENTER = cube.get(49);
+        
+        int[] cornerStickers = {42, 17, 48};
+        char[] cornerTargetColors = {B_CENTER, L_CENTER, D_CENTER};
+        int[] edgeStickers = {41, 16};
+        char[] edgeTargetColors = {B_CENTER, L_CENTER};
+        
+        return getF2LPairHeuristic(cornerStickers, cornerTargetColors, edgeStickers, edgeTargetColors);
+    }
+    
+    // --- F2L PAIR 4 (LF Slot: L/F/D Corner + L/F Edge) ---
+    public boolean isF2LPair4Solved() {
+        if (!isCrossSolved()) return false;
+        char L_CENTER = cube.get(13);
+        char F_CENTER = cube.get(22);
+        char D_CENTER = cube.get(49);
+        
+        int[] cornerStickers = {15, 24, 45};
+        char[] cornerTargetColors = {L_CENTER, F_CENTER, D_CENTER};
+        int[] edgeStickers = {14, 23};
+        char[] edgeTargetColors = {L_CENTER, F_CENTER};
+        
+        return checkF2LPair(cornerStickers, cornerTargetColors, edgeStickers, edgeTargetColors);
+    }
+    
+    public int getF2LPair4Heuristic() {
+        char L_CENTER = cube.get(13);
+        char F_CENTER = cube.get(22);
+        char D_CENTER = cube.get(49);
+        
+        int[] cornerStickers = {15, 24, 45};
+        char[] cornerTargetColors = {L_CENTER, F_CENTER, D_CENTER};
+        int[] edgeStickers = {14, 23};
+        char[] edgeTargetColors = {L_CENTER, F_CENTER};
+        
+        return getF2LPairHeuristic(cornerStickers, cornerTargetColors, edgeStickers, edgeTargetColors);
+    }
+
+    // --- Goal Check: Full F2L (Old Stage 2 / New Stage 5) ---
+    public boolean isF2LSolved() {
+        return isF2LPair1Solved() && isF2LPair2Solved() && isF2LPair3Solved() && isF2LPair4Solved();
+    }
+
+    // --- Preservation Checks (Crucial for the sequential F2L A* searches) ---
+    public boolean isF2LPreservedUpToPair1() {
+        return isCrossSolved() && isF2LPair1Solved();
+    }
+    
+    public boolean isF2LPreservedUpToPair2() {
+        return isCrossSolved() && isF2LPair1Solved() && isF2LPair2Solved();
+    }
+    
+    public boolean isF2LPreservedUpToPair3() {
+        return isCrossSolved() && isF2LPair1Solved() && isF2LPair2Solved() && isF2LPair3Solved();
+    }
+    
+    // This is the check used for OLL/PLL stages.
+    public boolean isF2LPreserved() {
+        return isF2LSolved();
+    }
+
     public boolean isOLLSolved() {
         char U_CENTER = cube.get(4);
         
         for (int i = 0; i < 9; i++) {
             if (cube.get(i) != U_CENTER) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    /**
-     * Integrity Check: Checks if the F2L (D and middle layers) is solved and preserved.
-     */
-    public boolean isF2LPreserved() {
-        char[] centers = getCenterColors();
-        int[] f2lStickers = {
-                9, 10, 11, 12, 13, 14, 15, 16, 17, 
-                18, 19, 20, 21, 22, 23, 24, 25, 26, 
-                27, 28, 29, 30, 31, 32, 33, 34, 35, 
-                36, 37, 38, 39, 40, 41, 42, 43, 44, 
-                45, 46, 47, 48, 49, 50, 51, 52, 53  
-        };
-
-        for (int index : f2lStickers) {
-            int faceIndex = index / 9; 
-            char targetCenter = centers[faceIndex];
-            if (cube.get(index) != targetCenter) {
                 return false;
             }
         }
