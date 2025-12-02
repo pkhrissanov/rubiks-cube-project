@@ -3,34 +3,47 @@ public class TestSolver {
     public static void main(String[] args) {
         try {
 
-            // Load scrambled cube
-            Cube start = new Cube("testCases/scramble07.txt");
+            Cube start = new Cube("testCases/scramble37.txt");
 
             System.out.println("========= START CUBE =========");
             start.printNet();
             System.out.println();
 
-            // Create solver with depth limit = 5
             Solver solver = new Solver(7);
 
-            System.out.println("Running DFS with depth limit 6...\n");
+            System.out.println("======== Running solveHuman() ========\n");
+            long startTime = System.currentTimeMillis();
 
-            // Solve the cube using BFS
-            CubeGraph.Node solution = solver.solve(start);
 
-            // Check result
+
+            CubeGraph.Node solution = solver.solveHuman(start);
+
             if (solution == null) {
-                System.out.println("❌ No solution found within depth limit 6.");
+                System.out.println("❌ Solver failed.");
                 return;
             }
 
-            // Solution found
-            System.out.println("✅ Solution found!");
-            System.out.println("Moves used (" + solution.path.size() + "):");
-            System.out.println(solution.path + "\n");
+            System.out.println("\n========== SOLVER RESULT ==========");
 
-            System.out.println("========= SOLVED CUBE =========");
+            // Check if final cube has the white cross
+            System.out.println("Checking whether White Cross was solved...");
+            Cube replay = start.clone();
+
+            for (int i = 0; i < solution.path.size(); i++) {
+                replay.move(solution.path.get(i));
+
+                if (solver.isWhiteCrossSolved(replay)) {
+                    System.out.println("\n⚪ White Cross achieved at move #" + (i + 1));
+                    System.out.println("Moves so far: " + solution.path.subList(0, i + 1));
+                    replay.printNet();
+                    break;
+                }
+            }
+
+            System.out.println("\n===== FINAL STATE =====");
             solution.currentState.printNet();
+            long endTime = System.currentTimeMillis();
+            System.out.println("That took " + (endTime - startTime) + " milliseconds");
 
         } catch (Exception e) {
             System.out.println("ERROR:");

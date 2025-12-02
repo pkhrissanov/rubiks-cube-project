@@ -5,11 +5,8 @@ public class Cube implements Cloneable {
 
     public ArrayList<Character> cube;
     public String parentEdge;
-    public float hscore;
-    public int stage;
-    // final clean cube: U,L,F,R,B,D contiguous
 
-    // --- existing file-reading constructor left unchanged ---
+
     public Cube(String fileName) throws IOException {
         File file = new File(fileName);
         if (!file.exists() || !file.canRead()) {
@@ -49,64 +46,9 @@ public class Cube implements Cloneable {
                 cube.set(idx++, lines.get(r).charAt(c));
     }
 
-    /**
-     * Copy constructor for creating clones
-     */
     public Cube(ArrayList<Character> arr) {
         this.cube = new ArrayList<>(arr.size());
         this.cube.addAll(arr);
-        this.hscore = getScore();
-    }
-
-    public Cube() {
-        cube = new ArrayList<>(54);
-        for (int i = 0; i < 54; i++) cube.add('a');
-    }
-
-
-    public void score(Cube cube) {
-        float tempscore = 0;
-
-        if (cube.stage == 1) {
-            for (int i = 0; i < 54; i++) {
-                if ((cube.cube.get(i).equals('G')) && (i == 15 || i == 16 || i == 17)) {
-                    tempscore += 1;
-                }
-                if ((cube.cube.get(i).equals('B')) && (i == 33 || i == 34 || i == 35)) {
-                    tempscore += 1;
-                }
-                if ((cube.cube.get(i).equals('W')) && (i == 24 || i == 25 || i == 26)) {
-                    tempscore += 1;
-                }
-                if ((cube.cube.get(i).equals('Y')) && (i == 42 || i == 43 || i == 44)) {
-                    tempscore += 1;
-                }
-
-            }
-        }
-        if (cube.stage == 2) {
-            for (int i = 0; i < 54; i++) {
-                if ((cube.cube.get(i).equals('G')) && (i == 15 || i == 16 || i == 17 || i == 12 || i == 13 || i == 14)) {
-                    tempscore += 1;
-                }
-                if ((cube.cube.get(i).equals('B')) && (i == 30 || i == 31 || i == 32 || i == 33 || i == 34 || i == 35)) {
-                    tempscore += 1;
-                }
-                if ((cube.cube.get(i).equals('W')) && (i == 21 || i == 22 || i == 23 || i == 24 || i == 25 || i == 26)) {
-                    tempscore += 1;
-                }
-                if ((cube.cube.get(i).equals('Y')) && (i == 39 || i == 40 || i == 41 || i == 42 || i == 43 || i == 44)) {
-                    tempscore += 1;
-                }
-            }
-
-        }
-        this.hscore = tempscore;
-    }
-
-    public float getScore() {
-        score(this);
-        return hscore;
     }
 
     @Override
@@ -121,9 +63,6 @@ public class Cube implements Cloneable {
         return sb.toString();
     }
 
-    // determine if cube is solved: each face's 9 stickers equal to face center
-
-    // --- your swap/rotateFaceCW and move methods (unchanged) ---
     private void swap(int a, int b) {
         char t = cube.get(a);
         cube.set(a, cube.get(b));
@@ -306,7 +245,6 @@ public class Cube implements Cloneable {
         return this.cube;
     }
 
-    // Printing unchanged
     public void printNet() {
         String s = this.toString();
 
@@ -333,16 +271,8 @@ public class Cube implements Cloneable {
         System.out.println("   " + s.substring(51, 54) + "   ");
     }
 
-    // --- equality & hash based on the string encoding of the cube ---
     public boolean isSolved() {
-        return this.toString().equals(
-                "OOOOOOOOO" +
-                        "GGGGGGGGG" +
-                        "WWWWWWWWW" +
-                        "BBBBBBBBB" +
-                        "YYYYYYYYY" +
-                        "RRRRRRRRR"
-        );
+        return this.toString().equals("OOOOOOOOO" + "GGGGGGGGG" + "WWWWWWWWW" + "BBBBBBBBB" + "YYYYYYYYY" + "RRRRRRRRR");
     }
 
 }
