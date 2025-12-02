@@ -30,22 +30,61 @@ public class Solver {
 
 
 
-        // Stage 1: White Cross
+        // ====== Stage 1: WHITE CROSS =========
         CubeGraph.Node wc = solveWhiteCross(start);
-        if(wc != null) return wc;
+        if(wc!=null) System.out.println("cross complete");;
         if (wc == null) return null;
 
-        // Stage 2: F2L
-        CubeGraph.Node f2l = solveF2L(wc.currentState);
-        if (f2l == null) return null;
+// build cube after WC
+        Cube cubeAfterWC = start.clone();
+        for (String mv : wc.path) cubeAfterWC.move(mv);
 
-        // Stage 3: OLL
-        CubeGraph.Node oll = solveOLL(f2l.currentState);
+
+
+// ====== Stage 2: F2L =========
+        CubeGraph.Node f2l = solveF2L(cubeAfterWC);
+        if (f2l == null) System.out.println("f2l failed");;
+            if (f2l == null) return null;
+
+// merge WC + F2L moves
+        ArrayList<String> f2lFullPath = new ArrayList<>();
+        f2lFullPath.addAll(wc.path);
+        f2lFullPath.addAll(f2l.path);
+
+// build cube after F2L
+        Cube cubeAfterF2L = start.clone();
+        for (String mv : f2lFullPath) cubeAfterF2L.move(mv);
+
+
+
+// ====== Stage 3: OLL =========
+        CubeGraph.Node oll = solveOLL(cubeAfterF2L);
         if (oll == null) return null;
 
-        // Stage 4: PLL
-        CubeGraph.Node pll = solvePLL(oll.currentState);
-        return pll;
+// merge WC + F2L + OLL
+        ArrayList<String> ollFullPath = new ArrayList<>(f2lFullPath);
+        ollFullPath.addAll(oll.path);
+
+// build cube after OLL
+        Cube cubeAfterOLL = start.clone();
+        for (String mv : ollFullPath) cubeAfterOLL.move(mv);
+
+
+
+// ====== Stage 4: PLL =========
+        CubeGraph.Node pll = solvePLL(cubeAfterOLL);
+        if (pll == null) return null;
+
+// merge ALL MOVES
+        ArrayList<String> finalPath = new ArrayList<>(ollFullPath);
+        finalPath.addAll(pll.path);
+
+// return final cube/node
+        Cube finalCube = start.clone();
+        for (String mv : finalPath) finalCube.move(mv);
+
+        return new CubeGraph.Node(finalCube, null, finalPath);
+
     }
 
 
@@ -134,6 +173,7 @@ public class Solver {
     }
 
 
+
     //All helpers for stage 1
 
     public boolean isWhiteCrossSolved(Cube c) {
@@ -214,6 +254,96 @@ public class Solver {
     }
 
 
+//helpers for stage 2
+    public float heuristicF2L(Cube c) {
+    int solvedPairs   = countSolvedF2LPairs(c);
+    int wrongLayer    = countF2LPiecesWrongLayer(c);
+    int misoriented   = countF2LMisorientation(c);
+
+    // weights can be tuned
+    return 4.0f * (4 - solvedPairs) + 2.0f * wrongLayer + 1.0f * misoriented;}
+
+
+
+
+
+
+    // FL pair
+    private static final int[] FL_CORNER = {6, 11, 18};
+    private static final int[] FL_EDGE   = {10, 3};
+
+    // FR pair
+    private static final int[] FR_CORNER = {8, 20, 27};
+    private static final int[] FR_EDGE   = {5, 28};
+
+    // BR pair
+    private static final int[] BR_CORNER = {26, 23, 47};
+    private static final int[] BR_EDGE   = {50, 34};
+
+    // BL pair
+    private static final int[] BL_CORNER = {24, 45, 17};
+    private static final int[] BL_EDGE   = {16, 48};
+
+    private static final String SOLVED_STR =
+                "OOOOOOOOO" +
+                "GGGGGGGGG" +
+                "WWWWWWWWW" +
+                "BBBBBBBBB" +
+                "YYYYYYYYY" +
+                "RRRRRRRRR";
+
+    public boolean isPairSolved(Cube c, int[] cornerIdx, int[] edgeIdx) {
+        // check corner stickers
+        for (int idx : cornerIdx) {
+            if (c.cube.get(idx) != SOLVED_STR.charAt(idx)) {
+                return false;
+            }
+        }
+        // check edge stickers
+        for (int idx : edgeIdx) {
+            if (c.cube.get(idx) != SOLVED_STR.charAt(idx)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    public int countSolvedF2LPairs(Cube c) {
+        int solved = 0;
+
+        if (isPairSolved(c, FL_CORNER, FL_EDGE)) solved++;
+        if (isPairSolved(c, FR_CORNER, FR_EDGE)) solved++;
+        if (isPairSolved(c, BR_CORNER, BR_EDGE)) solved++;
+        if (isPairSolved(c, BL_CORNER, BL_EDGE)) solved++;
+
+        return solved;
+    }
+
+
+    public int countF2LPiecesWrongLayer(Cube c) {
+        int wrong = 0;
+
+        if (!isPairSolved(c, FL_CORNER, FL_EDGE)) wrong++;
+        if (!isPairSolved(c, FR_CORNER, FR_EDGE)) wrong++;
+        if (!isPairSolved(c, BR_CORNER, BR_EDGE)) wrong++;
+        if (!isPairSolved(c, BL_CORNER, BL_EDGE)) wrong++;
+
+        return wrong;
+    }
+
+
+    public int countF2LMisorientation(Cube c) {
+        int mis = 0;
+
+        if (!isPairSolved(c, FL_CORNER, FL_EDGE)) mis++;
+        if (!isPairSolved(c, FR_CORNER, FR_EDGE)) mis++;
+        if (!isPairSolved(c, BR_CORNER, BR_EDGE)) mis++;
+        if (!isPairSolved(c, BL_CORNER, BL_EDGE)) mis++;
+
+        return mis;
+    }
+
 
 
 
@@ -226,9 +356,49 @@ public class Solver {
 
 
     // Stage 2
-    private CubeGraph.Node solveF2L(Cube afterCross) {
+    public CubeGraph.Node solveF2L(Cube start) {
+
+        CubeGraph.Node root = new CubeGraph.Node(start, null, new ArrayList<>());
+
+        PriorityQueue<AlgoNode> pq = new PriorityQueue<>();
+        float h0 = heuristicF2L(start);
+        pq.add(new AlgoNode(root, 0, h0));
+
+        HashSet<String> visited = new HashSet<>();
+
+        while (!pq.isEmpty()) {
+            AlgoNode cur = pq.poll();
+            CubeGraph.Node curNode = cur.node;
+            Cube curCube = curNode.currentState;
+            String curKey = curCube.toString();
+
+            if (visited.contains(curKey)) continue;
+            visited.add(curKey);
+
+            // GOAL CHECK
+            if (countSolvedF2LPairs(curCube) == 4) {
+                return curNode;
+            }
+
+            // Expand children
+            CubeGraph graph = new CubeGraph(curCube);
+            graph.currentNode = curNode;
+            graph.expandCurrent();
+
+            for (CubeGraph.Node child : curNode.children) {
+                String childKey = child.currentState.toString();
+                if (visited.contains(childKey)) continue;
+
+                float g = cur.g + 1;
+                float h = heuristicF2L(child.currentState);
+
+                pq.add(new AlgoNode(child, g, h));
+            }
+        }
+
         return null;
     }
+
 
     // Stage 3
     private CubeGraph.Node solveOLL(Cube afterF2L) {

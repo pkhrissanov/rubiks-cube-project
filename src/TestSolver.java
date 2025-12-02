@@ -3,7 +3,7 @@ public class TestSolver {
     public static void main(String[] args) {
         try {
 
-            Cube start = new Cube("testCases/scramble37.txt");
+            Cube start = new Cube("testCases/scramble02.txt");
 
             System.out.println("========= START CUBE =========");
             start.printNet();
@@ -15,8 +15,8 @@ public class TestSolver {
             long startTime = System.currentTimeMillis();
 
 
-
             CubeGraph.Node solution = solver.solveHuman(start);
+
 
             if (solution == null) {
                 System.out.println("❌ Solver failed.");
