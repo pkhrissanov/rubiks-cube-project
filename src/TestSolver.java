@@ -1,27 +1,28 @@
-
-import java.io.PrintWriter;
-
 public class TestSolver {
 
     public static void main(String[] args) {
 
-        // CHANGE THIS PATH TO YOUR SCRAMBLE FILE
-        String input = "testCases/scramble40.txt";
+        if (args.length != 1) {
+            System.out.println("Usage: java TestSolver <inputfile>");
+            return;
+        }
+
+        String input = args[0];
 
         try {
-            System.out.println("=== Loading cube from file ===");
+            // Load cube
             Cube start = new Cube(input);
 
-            System.out.println("\n=== INITIAL CUBE ===");
+            System.out.println("=== INPUT CUBE ===");
             start.printNet();
 
-            // Build heuristic DB once
-            System.out.println("\n=== Building heuristic DB (depth 5) ===");
-            Solver.heuristicDB = HeuristicDB.build(10);
+            // Build heuristic DB
+            System.out.println("\nBuilding heuristic DB (depth 5)...");
+            Solver.heuristicDB = HeuristicDB.build(5);
             System.out.println("Heuristic DB size: " + Solver.heuristicDB.size());
 
             // Solve
-            System.out.println("\n=== Solving using IDA* ===");
+            System.out.println("\nSolving with IDA*...");
             long t0 = System.currentTimeMillis();
             String solution = Solver.solve(start);
             long t1 = System.currentTimeMillis();
@@ -30,24 +31,24 @@ public class TestSolver {
             System.out.println("Moves: " + solution);
             System.out.println("Time: " + (t1 - t0) + " ms");
 
-            // Write result
-            try (PrintWriter pw = new PrintWriter("output.txt")) {
+            // Save to output.txt
+            try (java.io.PrintWriter pw = new java.io.PrintWriter("output.txt")) {
                 pw.println(solution);
             }
             System.out.println("Solution saved to output.txt");
 
-            // Apply the solution to show final solved cube
-            Cube solved = start.clone();
-            solved.applyMoves(solution);
+            // If solved, print the resulting cube
+            if (!solution.equals("NO SOLUTION") && !solution.isEmpty()) {
+                Cube solved = start.clone();
+                solved.applyMoves(solution);
 
-            System.out.println("\n=== FINAL CUBE AFTER APPLYING SOLUTION ===");
-            solved.printNet();
-
-            // Check if solved
-            System.out.println("\nCube solved? " + solved.isSolved());
+                System.out.println("\n=== CUBE AFTER APPLYING SOLUTION ===");
+                solved.printNet();
+                System.out.println("Solved? " + solved.isSolved());
+            }
 
         } catch (Exception e) {
-            System.out.println("❌ Error running TestSolver:");
+            System.out.println("Error running TestSolver:");
             e.printStackTrace();
         }
     }

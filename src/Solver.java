@@ -1,79 +1,77 @@
-
-
 import java.io.PrintWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 
 public class Solver {
 
-    // Moves we allow in search and heuristic DB
+    // Allowed moves (clockwise only)
     private static final String[] MOVES = {"U", "D", "L", "R", "F", "B"};
 
-    // Hard limits
-    private static final int MAX_IDA_DEPTH = 30;    // Max search depth
-    private static final int HEURISTIC_DB_DEPTH = 5; // BFS depth for heuristic DB
-    private static final int DEFAULT_H = 20;        // fallback heuristic (God's number)
+    // Heuristic DB (filled at startup)
+    public static HashMap<String, Integer> heuristicDB;
 
-    // Heuristic DB: state string -> distance from solved
-    static HashMap<String, Integer> heuristicDB;
+    private static final int MAX_IDA_DEPTH = 30;
+    private static final int HEURISTIC_DB_DEPTH = 5;
+    private static final int DEFAULT_H = 20;
 
-    // IDA* state
-    private static int threshold;       // current f-limit
-    private static int nextThreshold;   // minimal f that exceeded current threshold
-    private static String bestSolution; // solution path (as string of letters)
+    private static int threshold;
+    private static int nextThreshold;
+    private static String bestSolution;
 
     public static void main(String[] args) {
+
         if (args.length < 2) {
             System.out.println("File names are not specified");
-            System.out.println("usage: java " + MethodHandles.lookup().lookupClass().getName() + " input_file output_file");
+            System.out.println("usage: java " + MethodHandles.lookup().lookupClass().getName()
+                    + " input_file output_file");
             return;
         }
 
         try {
-            // Build heuristic DB once
-            System.out.println("Building heuristic DB (depth " + HEURISTIC_DB_DEPTH + ")...");
+            System.out.println("Building heuristic DB...");
             heuristicDB = HeuristicDB.build(HEURISTIC_DB_DEPTH);
             System.out.println("Heuristic DB size: " + heuristicDB.size());
 
-            // Load start cube from file
             Cube start = new Cube(args[0]);
-
-            // Solve
             String answer = solve(start);
 
-            // Write answer
             try (PrintWriter out = new PrintWriter(args[1])) {
                 out.println(answer);
             }
 
-            System.out.println("Solved. Moves: " + answer);
+            System.out.println("Solved: " + answer);
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    // Public solve method (can be used without main)
+    // -----------------------------------------------------------------------------------
+    // PUBLIC SOLVER API
+    // -----------------------------------------------------------------------------------
     public static String solve(Cube start) {
+
+        String startState = start.toString();
         if (start.isSolved()) return "";
 
         if (heuristicDB == null) {
             heuristicDB = HeuristicDB.build(HEURISTIC_DB_DEPTH);
         }
 
-        String startState = start.toString();
         threshold = h(startState);
-        if (threshold < 0) threshold = 0;
 
         while (true) {
             nextThreshold = Integer.MAX_VALUE;
             bestSolution = null;
 
             StringBuilder path = new StringBuilder();
-            boolean found = dfs(start, 0, path);
 
-            if (found) return bestSolution;
-            if (nextThreshold == Integer.MAX_VALUE || nextThreshold > MAX_IDA_DEPTH) {
+            if (dfs(start, 0, path)) {
+                return bestSolution;
+            }
+
+            if (nextThreshold > MAX_IDA_DEPTH || nextThreshold == Integer.MAX_VALUE) {
                 return "NO SOLUTION";
             }
 
@@ -81,9 +79,11 @@ public class Solver {
         }
     }
 
-    // Depth-first search for IDA*
-    // No visited set (as per your requirement)
+    // -----------------------------------------------------------------------------------
+    // IDA* DFS WITH MOVE PRUNING (no visited set)
+    // -----------------------------------------------------------------------------------
     private static boolean dfs(Cube cube, int g, StringBuilder path) {
+
         String state = cube.toString();
         int h = h(state);
         int f = g + h;
@@ -100,25 +100,42 @@ public class Solver {
 
         if (g >= MAX_IDA_DEPTH) return false;
 
+        // ----- MOVE PRUNING -----
+        String lastMove = (path.length() == 0 ? null : String.valueOf(path.charAt(path.length() - 1)));
+
         for (String move : MOVES) {
+
+            // PRUNE: Same face twice ("U" followed by "U")
+            // In your system, U' is implemented as U U U, so avoiding repeated face
+            // already avoids immediate inverses / redundancies.
+            if (lastMove != null && sameFace(lastMove, move)) {
+                continue;
+            }
+
             Cube next = cube.clone();
             next.move(move);
 
-            // record move (single letter)
             path.append(move);
 
-            if (dfs(next, g + 1, path)) return true;
+            if (dfs(next, g + 1, path)) {
+                return true;
+            }
 
-            // undo recorded move
             path.deleteCharAt(path.length() - 1);
         }
 
         return false;
     }
 
-    // Heuristic lookup
+    // -----------------------------------------------------------------------------------
+    // HELPERS
+    // -----------------------------------------------------------------------------------
     private static int h(String state) {
         Integer v = heuristicDB.get(state);
-        return (v != null) ? v : DEFAULT_H;
+        return (v != null ? v : DEFAULT_H);
+    }
+
+    private static boolean sameFace(String a, String b) {
+        return a.charAt(0) == b.charAt(0);
     }
 }
