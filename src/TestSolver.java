@@ -2,15 +2,14 @@ public class TestSolver {
 
     public static void main(String[] args) {
 
-        if (args.length != 1) {
-            System.out.println("Usage: java TestSolver <inputfile>");
-            return;
-        }
-
-        String input = args[0];
+        // -------------------------------------------------------------
+        // CHANGE THIS PATH to whichever test file you want to solve
+        // -------------------------------------------------------------
+        String input = "testCases/scramble05.txt";
+        // -------------------------------------------------------------
 
         try {
-            // Load cube
+            // Load cube from file
             Cube start = new Cube(input);
 
             System.out.println("=== INPUT CUBE ===");
@@ -37,14 +36,15 @@ public class TestSolver {
             }
             System.out.println("Solution saved to output.txt");
 
-            // If solved, print the resulting cube
+            // Apply solution and print final cube
             if (!solution.equals("NO SOLUTION") && !solution.isEmpty()) {
                 Cube solved = start.clone();
                 solved.applyMoves(solution);
 
                 System.out.println("\n=== CUBE AFTER APPLYING SOLUTION ===");
                 solved.printNet();
-                System.out.println("Solved? " + solved.isSolved());
+
+                System.out.println("\nCube solved? " + solved.isSolved());
             }
 
         } catch (Exception e) {
