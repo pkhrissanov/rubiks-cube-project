@@ -1,38 +1,65 @@
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.Queue;
+import java.util.*;
 
 public class HeuristicDB {
 
-    // Build a BFS-based heuristic DB from the solved cube
-    // maxDepth is how far from solved we explore
+    private static final String[] MOVES = {
+            "U","U'","D","D'",
+            "L","L'","R","R'",
+            "F","F'","B","B'"
+    };
+
+    // Map inverse moves to prune useless backtracking
+    private static final HashMap<String,String> INVERSE = new HashMap<>();
+    static {
+        INVERSE.put("U",  "U'");
+        INVERSE.put("U'", "U");
+        INVERSE.put("D",  "D'");
+        INVERSE.put("D'", "D");
+        INVERSE.put("L",  "L'");
+        INVERSE.put("L'", "L");
+        INVERSE.put("R",  "R'");
+        INVERSE.put("R'", "R");
+        INVERSE.put("F",  "F'");
+        INVERSE.put("F'", "F");
+        INVERSE.put("B",  "B'");
+        INVERSE.put("B'", "B");
+    }
+
+    // ----------------------------------------------------------
+    // Build a pattern database using BFS from the solved cube
+    // ----------------------------------------------------------
     public static HashMap<String, Integer> build(int maxDepth) {
 
-        HashMap<String, Integer> dist = new HashMap<>();
-        Queue<String> queue = new ArrayDeque<>();
+        HashMap<String, Integer> dist = new HashMap<>(1_000_000);
+        ArrayDeque<Node> queue = new ArrayDeque<>();
 
-        // Construct solved cube
-        Cube solved = makeSolvedCube();
-        String solvedState = solved.toString();
+        Cube solvedCube = makeSolvedCube();
+        String solvedState = solvedCube.toString();
 
         dist.put(solvedState, 0);
-        queue.add(solvedState);
-
-        String[] moves = {"U", "D", "L", "R", "F", "B"};
+        queue.add(new Node(solvedCube, solvedState, null)); // lastMove = null
 
         while (!queue.isEmpty()) {
-            String cur = queue.poll();
-            int d = dist.get(cur);
-            if (d == maxDepth) continue;
+            Node cur = queue.poll();
+            int depth = dist.get(cur.stateString);
 
-            for (String m : moves) {
-                Cube c = cubeFromState(cur);
-                c.move(m);
-                String ns = c.toString();
+            if (depth == maxDepth)
+                continue;
 
-                if (!dist.containsKey(ns)) {
-                    dist.put(ns, d + 1);
-                    queue.add(ns);
+            for (String move : MOVES) {
+
+                // prune inverse moves: do NOT undo last move
+                if (cur.lastMove != null && INVERSE.get(move).equals(cur.lastMove))
+                    continue;
+
+                Cube nextCube = cur.cube.clone(); // make a fast clone
+                nextCube.move(move);
+
+                String nextState = nextCube.toString();
+
+                if (!dist.containsKey(nextState)) {
+                    dist.put(nextState, depth + 1);
+                    queue.add(new Node(nextCube, nextState, move));
                 }
             }
         }
@@ -40,7 +67,22 @@ public class HeuristicDB {
         return dist;
     }
 
-    // Create a solved Cube using your 1D representation
+    // A tiny helper structure to store state, cube, last move
+    private static class Node {
+        Cube cube;
+        String stateString;
+        String lastMove;
+
+        Node(Cube cube, String s, String lastMove) {
+            this.cube = cube;
+            this.stateString = s;
+            this.lastMove = lastMove;
+        }
+    }
+
+    // ----------------------------------------------------------
+    // Construct solved cube
+    // ----------------------------------------------------------
     private static Cube makeSolvedCube() {
         Cube c = new Cube();
         String solved =
@@ -51,18 +93,9 @@ public class HeuristicDB {
                         "YYYYYYYYY" +  // B
                         "RRRRRRRRR";   // D
 
-        for (int i = 0; i < 54; i++) {
+        for (int i = 0; i < 54; i++)
             c.cube.set(i, solved.charAt(i));
-        }
-        return c;
-    }
 
-    // Rebuild a Cube object from a 54-char state string
-    private static Cube cubeFromState(String s) {
-        Cube c = new Cube();
-        for (int i = 0; i < 54; i++) {
-            c.cube.set(i, s.charAt(i));
-        }
         return c;
     }
 }
