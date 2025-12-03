@@ -5,7 +5,7 @@ public class TestSolver {
         // -------------------------------------------------------------
         // CHANGE THIS PATH to whichever test file you want to solve
         // -------------------------------------------------------------
-        String input = "testCases/scramble16.txt";
+        String input = "testCases/scramble13.txt";
         // -------------------------------------------------------------
 
         try {

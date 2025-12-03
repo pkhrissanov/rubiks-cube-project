@@ -9,6 +9,30 @@ public class Cube implements Cloneable {
     public float hscore;
     public int stage;
     // final clean cube: U,L,F,R,B,D contiguous
+    /**
+     * Simple admissible heuristic:
+     * count how many stickers differ from the solved state,
+     * then scale down.
+     */
+    public int heuristicDistance() {
+        String solved =
+                "OOOOOOOOO" +  // U
+                        "GGGGGGGGG" +  // L
+                        "WWWWWWWWW" +  // F
+                        "BBBBBBBBB" +  // R
+                        "YYYYYYYYY" +  // B
+                        "RRRRRRRRR";   // D
+
+        int mismatches = 0;
+        for (int i = 0; i < 54; i++) {
+            if (cube.get(i) != solved.charAt(i)) {
+                mismatches++;
+            }
+        }
+
+        // scale down so IDA* does not overestimate
+        return mismatches / 8;
+    }
 
     // --- file-reading constructor (input format from assignment) ---
     public Cube(String fileName) throws IOException {
@@ -16,6 +40,7 @@ public class Cube implements Cloneable {
         if (!file.exists() || !file.canRead()) {
             throw new IOException("Cannot read: " + file.getAbsolutePath());
         }
+
 
         ArrayList<String> lines = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
