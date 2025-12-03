@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.util.ArrayList;
 
@@ -9,7 +10,7 @@ public class Cube implements Cloneable {
     public int stage;
     // final clean cube: U,L,F,R,B,D contiguous
 
-    // --- existing file-reading constructor left unchanged ---
+    // --- file-reading constructor (input format from assignment) ---
     public Cube(String fileName) throws IOException {
         File file = new File(fileName);
         if (!file.exists() || !file.canRead()) {
@@ -29,28 +30,40 @@ public class Cube implements Cloneable {
         cube = new ArrayList<>(54);
         for (int i = 0; i < 54; i++) cube.add('X');
         int idx = 0;
+
+        // U (0–8): rows 0–2, cols 3–5
         for (int r = 0; r < 3; r++)
             for (int c = 3; c < 6; c++)
                 cube.set(idx++, lines.get(r).charAt(c));
+
+        // L (9–17): rows 3–5, cols 0–2
         for (int r = 3; r < 6; r++)
             for (int c = 0; c < 3; c++)
                 cube.set(idx++, lines.get(r).charAt(c));
+
+        // F (18–26): rows 3–5, cols 3–5
         for (int r = 3; r < 6; r++)
             for (int c = 3; c < 6; c++)
                 cube.set(idx++, lines.get(r).charAt(c));
+
+        // R (27–35): rows 3–5, cols 6–8
         for (int r = 3; r < 6; r++)
             for (int c = 6; c < 9; c++)
                 cube.set(idx++, lines.get(r).charAt(c));
+
+        // B (36–44): rows 3–5, cols 9–11
         for (int r = 3; r < 6; r++)
             for (int c = 9; c < 12; c++)
                 cube.set(idx++, lines.get(r).charAt(c));
+
+        // D (45–53): rows 6–8, cols 3–5
         for (int r = 6; r < 9; r++)
             for (int c = 3; c < 6; c++)
                 cube.set(idx++, lines.get(r).charAt(c));
     }
 
     /**
-     * Copy constructor for creating clones
+     * Copy constructor for creating clones from an ArrayList
      */
     public Cube(ArrayList<Character> arr) {
         this.cube = new ArrayList<>(arr.size());
@@ -58,11 +71,25 @@ public class Cube implements Cloneable {
         this.hscore = getScore();
     }
 
+    /**
+     * Default constructor: allocate 54 stickers (filled with 'X')
+     * Used by the heuristic DB to build states from strings.
+     */
     public Cube() {
         cube = new ArrayList<>(54);
-        for (int i = 0; i < 54; i++) cube.add('a');
+        for (int i = 0; i < 54; i++) cube.add('X');
     }
 
+    /**
+     * Convenience: apply a sequence of single-letter moves, e.g. "URFDL"
+     */
+    public void applyMoves(String sequence) {
+        for (int i = 0; i < sequence.length(); i++) {
+            char ch = sequence.charAt(i);
+            if (Character.isWhitespace(ch)) continue;
+            move(String.valueOf(ch));
+        }
+    }
 
     public void score(Cube cube) {
         float tempscore = 0;
@@ -81,7 +108,6 @@ public class Cube implements Cloneable {
                 if ((cube.cube.get(i).equals('Y')) && (i == 42 || i == 43 || i == 44)) {
                     tempscore += 1;
                 }
-
             }
         }
         if (cube.stage == 2) {
@@ -99,7 +125,6 @@ public class Cube implements Cloneable {
                     tempscore += 1;
                 }
             }
-
         }
         this.hscore = tempscore;
     }
@@ -121,15 +146,12 @@ public class Cube implements Cloneable {
         return sb.toString();
     }
 
-    // determine if cube is solved: each face's 9 stickers equal to face center
-
-    // --- your swap/rotateFaceCW and move methods (unchanged) ---
+    // --- low-level swap & face rotation ---
     private void swap(int a, int b) {
         char t = cube.get(a);
         cube.set(a, cube.get(b));
         cube.set(b, t);
     }
-
 
     private void rotateFaceCW(int base) {
         swap(base + 0, base + 6);
@@ -140,6 +162,7 @@ public class Cube implements Cloneable {
         swap(base + 7, base + 5);
     }
 
+    // --- single-move application ---
     public ArrayList<Character> move(String m) {
 
         switch (m) {
@@ -306,7 +329,7 @@ public class Cube implements Cloneable {
         return this.cube;
     }
 
-    // Printing unchanged
+    // Printing
     public void printNet() {
         String s = this.toString();
 
@@ -333,7 +356,7 @@ public class Cube implements Cloneable {
         System.out.println("   " + s.substring(51, 54) + "   ");
     }
 
-    // --- equality & hash based on the string encoding of the cube ---
+    // --- solved check for this encoding ---
     public boolean isSolved() {
         return this.toString().equals(
                 "OOOOOOOOO" +
@@ -344,5 +367,4 @@ public class Cube implements Cloneable {
                         "RRRRRRRRR"
         );
     }
-
 }

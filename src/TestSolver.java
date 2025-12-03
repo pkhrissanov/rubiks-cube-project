@@ -1,39 +1,53 @@
+
+import java.io.PrintWriter;
+
 public class TestSolver {
 
     public static void main(String[] args) {
+
+        // CHANGE THIS PATH TO YOUR SCRAMBLE FILE
+        String input = "testCases/scramble40.txt";
+
         try {
+            System.out.println("=== Loading cube from file ===");
+            Cube start = new Cube(input);
 
-            // Load scrambled cube
-            Cube start = new Cube("testCases/scramble15.txt");
-
-            System.out.println("========= START CUBE =========");
+            System.out.println("\n=== INITIAL CUBE ===");
             start.printNet();
-            System.out.println();
 
-            // Create solver with depth limit = 5
-            Solver solver = new Solver(7);
+            // Build heuristic DB once
+            System.out.println("\n=== Building heuristic DB (depth 5) ===");
+            Solver.heuristicDB = HeuristicDB.build(10);
+            System.out.println("Heuristic DB size: " + Solver.heuristicDB.size());
 
-            System.out.println("Running DFS with depth limit 6...\n");
+            // Solve
+            System.out.println("\n=== Solving using IDA* ===");
+            long t0 = System.currentTimeMillis();
+            String solution = Solver.solve(start);
+            long t1 = System.currentTimeMillis();
 
-            // Solve the cube using BFS
-            CubeGraph.Node solution = solver.solve(start);
+            System.out.println("\n=== SOLUTION FOUND ===");
+            System.out.println("Moves: " + solution);
+            System.out.println("Time: " + (t1 - t0) + " ms");
 
-            // Check result
-            if (solution == null) {
-                System.out.println("❌ No solution found within depth limit 6.");
-                return;
+            // Write result
+            try (PrintWriter pw = new PrintWriter("output.txt")) {
+                pw.println(solution);
             }
+            System.out.println("Solution saved to output.txt");
 
-            // Solution found
-            System.out.println("✅ Solution found!");
-            System.out.println("Moves used (" + solution.path.size() + "):");
-            System.out.println(solution.path + "\n");
+            // Apply the solution to show final solved cube
+            Cube solved = start.clone();
+            solved.applyMoves(solution);
 
-            System.out.println("========= SOLVED CUBE =========");
-            solution.currentState.printNet();
+            System.out.println("\n=== FINAL CUBE AFTER APPLYING SOLUTION ===");
+            solved.printNet();
+
+            // Check if solved
+            System.out.println("\nCube solved? " + solved.isSolved());
 
         } catch (Exception e) {
-            System.out.println("ERROR:");
+            System.out.println("❌ Error running TestSolver:");
             e.printStackTrace();
         }
     }
